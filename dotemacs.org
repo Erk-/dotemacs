@@ -1,6 +1,26 @@
 #+TITLE: DotEmacs
 #+AUTHOR: Valdemar Erk
 
+* Table of content                                                      :TOC:
+- [[#bootstrap][Bootstrap]]
+  - [[#user-information][User information]]
+  - [[#initial-setup][Initial setup]]
+- [[#gui][Gui]]
+  - [[#intro][Intro]]
+  - [[#fonts][Fonts]]
+  - [[#theme][Theme]]
+- [[#editor][Editor]]
+- [[#org-mode][Org mode]]
+- [[#rss][RSS]]
+- [[#irc][IRC]]
+- [[#ivy][IVY]]
+- [[#mail][Mail]]
+- [[#rust][Rust]]
+- [[#magit][Magit]]
+- [[#misc][Misc]]
+  - [[#pdf-viewer][PDF viewer]]
+- [[#keybinds][Keybinds]]
+
 * Bootstrap
 ** User information
 #+BEGIN_SRC emacs-lisp
