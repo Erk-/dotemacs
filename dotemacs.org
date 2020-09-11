@@ -34,13 +34,12 @@
 #+BEGIN_SRC emacs-lisp
 (set-language-environment "UTF-8")
 (setq
- backup-by-copying t      ; don't clobber symlinks
- backup-directory-alist
- '(("." . "~/.saves/"))    ; don't litter my fs tree
- delete-old-versions t
- kept-new-versions 8
- kept-old-versions 8
- version-control t)       ; use versioned backups
+ backup-by-copying      t                         ; don't clobber symlinks
+ backup-directory-alist '(("." . "~/.saves/"))    ; don't litter my fs tree
+ delete-old-versions    t
+ kept-new-versions      8
+ kept-old-versions      8
+ version-control        t)                        ; use versioned backups
 
 ;; Danish calender
 (load-file "~/.emacs.d/lisp/da-kalender.el")
@@ -75,10 +74,10 @@ Set up some small things to start with:
 Set up scrolling
 #+BEGIN_SRC emacs-lisp
 ;; makes scrolling a bit less jumpy.
-(setq mouse-wheel-follow-mouse t ;; scroll window under mouse
-      scroll-step 1 ;; keyboard scroll one line at a time
-      mouse-wheel-progressive-speed nil ;; don't accelerate scrollin
-      mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+(setq mouse-wheel-follow-mouse      t                   ;; scroll window under mouse
+      scroll-step                   1                   ;; keyboard scroll one line at a time
+      mouse-wheel-progressive-speed nil                 ;; don't accelerate scrollin
+      mouse-wheel-scroll-amount     '(1 ((shift) . 1))) ;; one line at a time
 #+END_SRC
 
 Set up some ansi colours.
@@ -145,8 +144,8 @@ Install multiple-cursors, the keybinds are in the last chapter
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
-(setq org-src-preserve-indentation t)
-(setq org-edit-src-content-indentation 0)
+(setq org-src-preserve-indentation t
+      org-edit-src-content-indentation 0)
 
 (use-package org-ref
   :ensure t)
@@ -281,10 +280,10 @@ Then we initialize all the packages
 
 ;; And some configuration
 (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line)
-(setq ivy-use-virtual-buffers t)
-(setq enable-recursive-minibuffers t)
-(setq ivy-use-virtual-buffers t)
-(setq ivy-count-format "(%d/%d) ")
+(setq ivy-use-virtual-buffers t
+      enable-recursive-minibuffers t
+      ivy-use-virtual-buffers t
+      ivy-count-format "(%d/%d) ")
 #+END_SRC
 * Mail
 We start by setting up smtpmail
@@ -345,9 +344,9 @@ Initialize and configure rustic
 (setq rustic-lsp-server 'rust-analyzer)
 (remove-hook 'rustic-mode-hook 'flycheck-mode)
                                         ;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-(setq company-tooltip-align-annotations t)
-(setq company-idle-delay 1)
-(setq company-show-numbers t)
+(setq company-tooltip-align-annotations t
+      company-idle-delay 1
+      company-show-numbers t)
 #+END_SRC
 * Magit
 Install Magit and magit forge and setup ssh agent
