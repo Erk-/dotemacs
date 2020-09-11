@@ -19,6 +19,7 @@
 - [[#magit][Magit]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
+  - [[#futhark][Futhark]]
 - [[#keybinds][Keybinds]]
 
 * Bootstrap
