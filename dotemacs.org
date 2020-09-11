@@ -373,7 +373,8 @@ Install Magit and magit forge and setup ssh agent
 #+END_SRC
 * Keybinds
 #+BEGIN_SRC emacs-lisp
-
+;; Turn off the most annoying keybind
+(global-unset-key (kbd "<insert>"))
 
 ;; Windmove alt+←↓↑→
 (windmove-default-keybindings 'meta)
