@@ -26,18 +26,20 @@
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Valdemar Erk"
       user-mail-address "valdemar@erk.io")
+
+(setq auth-sources '("~/.authinfo.gpg"))
 #+END_SRC
 ** Initial setup
 #+BEGIN_SRC emacs-lisp
 (set-language-environment "UTF-8")
 (setq
-   backup-by-copying t      ; don't clobber symlinks
-   backup-directory-alist
-    '(("." . "~/.saves/"))    ; don't litter my fs tree
-   delete-old-versions t
-   kept-new-versions 8
-   kept-old-versions 8
-   version-control t)       ; use versioned backups
+ backup-by-copying t      ; don't clobber symlinks
+ backup-directory-alist
+ '(("." . "~/.saves/"))    ; don't litter my fs tree
+ delete-old-versions t
+ kept-new-versions 8
+ kept-old-versions 8
+ version-control t)       ; use versioned backups
 
 ;; Danish calender
 (load-file "~/.emacs.d/lisp/da-kalender.el")
@@ -46,7 +48,7 @@
 ** Intro
 Set up some small things to start with:
 #+BEGIN_SRC emacs-lisp
-; Turn off start screen.
+;; Turn off start screen.
 (setq inhibit-startup-screen t)
 
 ;; Turn off tool-bar-mode.
@@ -64,6 +66,9 @@ Set up some small things to start with:
 
 ;; Remove the scroll bar.
 (scroll-bar-mode -1)
+
+;; Fix strange size issues with tiling wms
+(setq frame-resize-pixelwise t)
 #+END_SRC
 
 Set up scrolling
@@ -78,7 +83,7 @@ Set up scrolling
 Set up some ansi colours.
 #+BEGIN_SRC emacs-lisp
 (setq ansi-color-faces-vector
-   [default default default italic underline success warning error])
+      [default default default italic underline success warning error])
 #+END_SRC
 
 ** Fonts
@@ -89,11 +94,11 @@ Set up fonts
     (
      (t
       (:family "Monofur Nerd Font Mono"
-       :foundry "unci"
-       :slant normal
-       :weight normal
-       :height 90
-       :width normal)))))
+               :foundry "unci"
+               :slant normal
+               :weight normal
+               :height 90
+               :width normal)))))
 
 ;; Fallback font
 (set-fontset-font t 'unicode "Symbola-12" nil 'prepend)
@@ -139,6 +144,9 @@ Install multiple-cursors, the keybinds are in the last chapter
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
+(setq org-src-preserve-indentation t)
+(setq org-edit-src-content-indentation 0)
+
 (use-package org-ref
   :ensure t)
 
@@ -182,7 +190,7 @@ Will have to be cleaned up!
         ("mathescape=true")))
 
 (setq org-latex-pdf-process (list
-   "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
+                             "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
 
 (add-hook 'org-mode-hook 'org-bullets-mode)
 (add-hook 'org-mode-hook 'auto-fill-mode)
@@ -211,42 +219,42 @@ Set up list of feeds
 * IRC
 This is all commented out because I have not used it for a long while
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package circe
-  ;;   :ensure t)
+;; (use-package circe
+;;   :ensure t)
 
-  ;; (setq auth-sources '("~/.authinfo.gpg"))
+;; (setq auth-sources '("~/.authinfo.gpg"))
 
-  ;; (defun my-fetch-password (&rest params)
-  ;;   (require 'auth-source)
-  ;;   (let ((match (car (apply 'auth-source-search params))))
-  ;;     (if match
-  ;;         (let ((secret (plist-get match :secret)))
-  ;;           (if (functionp secret)
-  ;;               (funcall secret)
-  ;;             secret))
-  ;;       (error "Password not found for %S" params))))
+;; (defun my-fetch-password (&rest params)
+;;   (require 'auth-source)
+;;   (let ((match (car (apply 'auth-source-search params))))
+;;     (if match
+;;         (let ((secret (plist-get match :secret)))
+;;           (if (functionp secret)
+;;               (funcall secret)
+;;             secret))
+;;       (error "Password not found for %S" params))))
 
-  ;; (defun my-password (server)
-  ;;   (my-fetch-password :login "Erk" :machine "irc.freenode.net"))
+;; (defun my-password (server)
+;;   (my-fetch-password :login "Erk" :machine "irc.freenode.net"))
 
-  ;; (setq circe-network-options
-  ;;       '(("Freenode"
-  ;;          :tls t
-  ;;          :nick "Erk"
-  ;;          :sasl-username "Erk"
-  ;;          :sasl-password my-password
-  ;;          ;; :channels ("#diku")
-  ;;          )))
+;; (setq circe-network-options
+;;       '(("Freenode"
+;;          :tls t
+;;          :nick "Erk"
+;;          :sasl-username "Erk"
+;;          :sasl-password my-password
+;;          ;; :channels ("#diku")
+;;          )))
 
-  ;; (setq circe-use-cycle-completion t)
+;; (setq circe-use-cycle-completion t)
 
-  ;; (setq
-  ;;  lui-time-stamp-position 'right-margin
-  ;;  lui-time-stamp-format "%H:%M")
+;; (setq
+;;  lui-time-stamp-position 'right-margin
+;;  lui-time-stamp-format "%H:%M")
 
-  ;; (add-hook 'lui-mode-hook 'my-circe-set-margin)
-  ;; (defun my-circe-set-margin ()
-  ;;   (setq right-margin-width 5))
+;; (add-hook 'lui-mode-hook 'my-circe-set-margin)
+;; (defun my-circe-set-margin ()
+;;   (setq right-margin-width 5))
 #+END_SRC
 * IVY
 We start by installing all the packages
@@ -281,44 +289,44 @@ Then we initialize all the packages
 We start by setting up smtpmail
 #+BEGIN_SRC emacs-lisp
 (setq message-send-mail-function 'smtpmail-send-it
-     starttls-use-gnutls t
-     smtpmail-starttls-credentials
-     '(("asmtp.unoeuro.com" 587 nil nil))
-     smtpmail-auth-credentials
-     (expand-file-name "~/.authinfo.gpg")
-     smtpmail-default-smtp-server "asmtp.unoeuro.com"
-     smtpmail-smtp-server "asmtp.unoeuro.com"
-     smtpmail-smtp-service 587
-     smtpmail-debug-info t)
+      starttls-use-gnutls t
+      smtpmail-starttls-credentials
+      '(("asmtp.unoeuro.com" 587 nil nil))
+      smtpmail-auth-credentials
+      (expand-file-name "~/.authinfo.gpg")
+      smtpmail-default-smtp-server "asmtp.unoeuro.com"
+      smtpmail-smtp-server "asmtp.unoeuro.com"
+      smtpmail-smtp-service 587
+      smtpmail-debug-info t)
 #+END_SRC
 
 We then setup wanderlust, here it should be noted a large part of the
 config resides in ~~/.wl~.
 #+BEGIN_SRC emacs-lisp
-  (straight-override-recipe
-   '(semi :host github :repo "wanderlust/semi" :branch "semi-1_14-wl"))
-  (straight-override-recipe
-   '(flim :host github :repo "wanderlust/flim" :branch "flim-1_14-wl"
-           :files ("*.texi" "*.el" (:exclude "md5-dl.el"
-                                             "md5-el.el" "mel-b-dl.el" "sha1-dl.el"
-                                             "smtpmail.el") "flim-pkg.el")))
-  (straight-override-recipe
-    '(apel :host github :repo "wanderlust/apel" :branch "apel-wl"))
-  (straight-override-recipe
-    '(wanderlust :host github :repo "wanderlust/wanderlust" :branch "master"))
+(straight-override-recipe
+ '(semi :host github :repo "wanderlust/semi" :branch "semi-1_14-wl"))
+(straight-override-recipe
+ '(flim :host github :repo "wanderlust/flim" :branch "flim-1_14-wl"
+        :files ("*.texi" "*.el" (:exclude "md5-dl.el"
+                                          "md5-el.el" "mel-b-dl.el" "sha1-dl.el"
+                                          "smtpmail.el") "flim-pkg.el")))
+(straight-override-recipe
+ '(apel :host github :repo "wanderlust/apel" :branch "apel-wl"))
+(straight-override-recipe
+ '(wanderlust :host github :repo "wanderlust/wanderlust" :branch "master"))
 
-  (use-package wanderlust
-    :ensure t
-    :no-require t)
+(use-package wanderlust
+  :ensure t
+  :no-require t)
 
-  ;;Wanderlust
-  (require 'wl)
-  (autoload 'wl "wl" "Wanderlust" t)
-  (autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
-  (autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
+;;Wanderlust
+(require 'wl)
+(autoload 'wl "wl" "Wanderlust" t)
+(autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
+(autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
 
-  ;; Open ~/.wl in emacs lisp mode.
-  (add-to-list 'auto-mode-alist '("\.wl$" . emacs-lisp-mode))
+;; Open ~/.wl in emacs lisp mode.
+(add-to-list 'auto-mode-alist '("\.wl$" . emacs-lisp-mode))
 #+END_SRC
 * Rust
 Install packages needed for rustic with rust-analyzer
@@ -335,7 +343,7 @@ Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
 (setq rustic-lsp-server 'rust-analyzer)
 (remove-hook 'rustic-mode-hook 'flycheck-mode)
-;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+                                        ;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 (setq company-tooltip-align-annotations t)
 (setq company-idle-delay 1)
 (setq company-show-numbers t)
@@ -343,12 +351,12 @@ Initialize and configure rustic
 * Magit
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
-  (use-package magit)
-  (use-package forge)
+(use-package magit)
+(use-package forge)
 
-  (use-package exec-path-from-shell)
-  (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-  (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+(use-package exec-path-from-shell)
+(exec-path-from-shell-copy-env "SSH_AGENT_PID")
+(exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
 
 #+end_src
 * Misc
@@ -359,8 +367,14 @@ Install Magit and magit forge and setup ssh agent
   :init
   (pdf-tools-install))
 #+END_SRC
+** Futhark
+#+BEGIN_SRC emacs-lisp
+(use-package futhark-mode)
+#+END_SRC
 * Keybinds
 #+BEGIN_SRC emacs-lisp
+
+
 ;; Windmove alt+←↓↑→
 (windmove-default-keybindings 'meta)
 
