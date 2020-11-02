@@ -1,0 +1,400 @@
+#+TITLE: DotEmacs
+#+AUTHOR: Valdemar Erk
+
+* Table of content                                                      :TOC:
+- [[#bootstrap][Bootstrap]]
+  - [[#user-information][User information]]
+  - [[#initial-setup][Initial setup]]
+- [[#gui][Gui]]
+  - [[#intro][Intro]]
+  - [[#fonts][Fonts]]
+  - [[#theme][Theme]]
+- [[#editor][Editor]]
+- [[#org-mode][Org mode]]
+- [[#rss][RSS]]
+- [[#irc][IRC]]
+- [[#ivy][IVY]]
+- [[#mail][Mail]]
+- [[#rust][Rust]]
+- [[#magit][Magit]]
+- [[#misc][Misc]]
+  - [[#pdf-viewer][PDF viewer]]
+  - [[#futhark][Futhark]]
+- [[#keybinds][Keybinds]]
+
+* Bootstrap
+** User information
+#+BEGIN_SRC emacs-lisp
+(setq user-full-name "Valdemar Erk"
+      user-mail-address "valdemar@erk.io")
+
+(setq auth-sources '("~/.authinfo.gpg"))
+#+END_SRC
+** Initial setup
+#+BEGIN_SRC emacs-lisp
+(set-language-environment "UTF-8")
+(setq
+ backup-by-copying      t                         ; don't clobber symlinks
+ backup-directory-alist '(("." . "~/.saves/"))    ; don't litter my fs tree
+ delete-old-versions    t
+ kept-new-versions      8
+ kept-old-versions      8
+ version-control        t)                        ; use versioned backups
+
+;; Danish calender
+(load-file "~/.emacs.d/lisp/da-kalender.el")
+#+END_SRC
+* Gui
+** Intro
+Set up some small things to start with:
+#+BEGIN_SRC emacs-lisp
+;; Turn off start screen.
+(setq inhibit-startup-screen t)
+
+;; Turn off tool-bar-mode.
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+
+;; Turn off the menu bar.
+(menu-bar-mode -1)
+
+;; Don't blink the cursor.
+(blink-cursor-mode -1)
+
+;; enable column-number-mode.
+(column-number-mode)
+
+;; Remove the scroll bar.
+(scroll-bar-mode -1)
+
+;; Fix strange size issues with tiling wms
+(setq frame-resize-pixelwise t)
+#+END_SRC
+
+Set up scrolling
+#+BEGIN_SRC emacs-lisp
+;; makes scrolling a bit less jumpy.
+(setq mouse-wheel-follow-mouse      t                   ;; scroll window under mouse
+      scroll-step                   1                   ;; keyboard scroll one line at a time
+      mouse-wheel-progressive-speed nil                 ;; don't accelerate scrollin
+      mouse-wheel-scroll-amount     '(1 ((shift) . 1))) ;; one line at a time
+#+END_SRC
+
+Set up some ansi colours.
+#+BEGIN_SRC emacs-lisp
+(setq ansi-color-faces-vector
+      [default default default italic underline success warning error])
+#+END_SRC
+
+** Fonts
+Set up fonts
+#+BEGIN_SRC emacs-lisp
+(custom-set-faces
+ '(default
+    (
+     (t
+      (:family "Monofur Nerd Font Mono"
+               :foundry "unci"
+               :slant normal
+               :weight normal
+               :height 90
+               :width normal)))))
+
+;; Fallback font
+(set-fontset-font t 'unicode "Symbola-12" nil 'prepend)
+#+END_SRC
+
+** Theme
+We start by setting the paren mode to blocks:
+#+BEGIN_SRC emacs-lisp
+(show-paren-mode t)
+(setq show-paren-style 'expression)
+#+END_SRC
+
+We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
+#+BEGIN_SRC emacs-lisp
+(use-package moe-theme)
+(setq moe-theme-highlight-buffer-id nil)
+(moe-dark)
+(moe-theme-set-color 'red)
+#+END_SRC
+* Editor
+Indent with spaces
+#+BEGIN_SRC emacs-lisp
+(setq-default indent-tabs-mode nil)
+(setq indent-tabs-mode nil)
+#+END_SRC
+
+Install rainbow delimiters
+#+BEGIN_SRC emacs-lisp
+(use-package rainbow-delimiters)
+(add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+#+END_SRC
+
+Install multiple-cursors, the keybinds are in the last chapter
+#+BEGIN_SRC emacs-lisp
+(use-package multiple-cursors)
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+#+END_SRC
+* Org mode
+Will have to be cleaned up!
+#+BEGIN_SRC emacs-lisp
+(setq org-src-preserve-indentation t
+      org-edit-src-content-indentation 0)
+
+(use-package org-ref
+  :ensure t)
+
+(require 'org-ref)
+
+(use-package org-bullets
+  :ensure t)
+
+(require 'org-bullets)
+
+(org-babel-do-load-languages 'org-babel-load-languages
+                             '((shell . t)
+                               (latex . t)))
+
+
+(require 'org)
+(require 'ob-dot)
+
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
+
+(setq org-agenda-files (list "~/org/other.org"
+                             "~/org/uni.org" 
+                             "~/org/home.org"
+                             "~/org/cal.org"
+                             "~/dev/dawn/dawn.org"
+                             "~/Dokumenter/SAT/SAT.org"
+                             "~/Dokumenter/COCO/COCO.org"))
+
+(setq org-latex-default-figure-position "H")
+
+(setq org-src-fontify-natively t)
+
+(setq org-latex-listings 'minted)
+(setq org-latex-minted-options
+      '(("frame" "lines")
+        ("linenos=true")
+        ("breaklines=true")
+        ("escapeinside=||")
+        ("mathescape=true")))
+
+(setq org-latex-pdf-process (list
+                             "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
+
+(add-hook 'org-mode-hook 'org-bullets-mode)
+(add-hook 'org-mode-hook 'auto-fill-mode)
+(add-hook 'org-mode-hook 'org-indent-mode)
+
+;; Only env in beamer
+(add-hook 'org-beamer-hook '(add-to-list 'org-beamer-environments-extra
+                                         '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
+#+END_SRC
+* RSS
+Install elfeed and goodies
+#+BEGIN_SRC emacs-lisp
+(use-package elfeed)
+(use-package elfeed-goodies)
+
+(setq elfeed-goodies/tag-column-width 12)
+#+END_SRC
+
+Set up list of feeds
+#+BEGIN_SRC emacs-lisp
+(setq elfeed-feeds
+      '(("https://www.youtube.com/feeds/videos.xml?channel_id=UCH-_hzb2ILSCo9ftVSnrCIQ" Youtube)
+        ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q" Youtube)
+        ("http://feeds.reuters.com/Reuters/worldNews" News)))
+#+END_SRC
+* IRC
+This is all commented out because I have not used it for a long while
+#+BEGIN_SRC emacs-lisp
+;; (use-package circe
+;;   :ensure t)
+
+;; (setq auth-sources '("~/.authinfo.gpg"))
+
+;; (defun my-fetch-password (&rest params)
+;;   (require 'auth-source)
+;;   (let ((match (car (apply 'auth-source-search params))))
+;;     (if match
+;;         (let ((secret (plist-get match :secret)))
+;;           (if (functionp secret)
+;;               (funcall secret)
+;;             secret))
+;;       (error "Password not found for %S" params))))
+
+;; (defun my-password (server)
+;;   (my-fetch-password :login "Erk" :machine "irc.freenode.net"))
+
+;; (setq circe-network-options
+;;       '(("Freenode"
+;;          :tls t
+;;          :nick "Erk"
+;;          :sasl-username "Erk"
+;;          :sasl-password my-password
+;;          ;; :channels ("#diku")
+;;          )))
+
+;; (setq circe-use-cycle-completion t)
+
+;; (setq
+;;  lui-time-stamp-position 'right-margin
+;;  lui-time-stamp-format "%H:%M")
+
+;; (add-hook 'lui-mode-hook 'my-circe-set-margin)
+;; (defun my-circe-set-margin ()
+;;   (setq right-margin-width 5))
+#+END_SRC
+* IVY
+We start by installing all the packages
+#+BEGIN_SRC emacs-lisp
+(use-package ivy)
+(use-package swiper)
+(use-package counsel)
+(use-package ivy-rich)
+(use-package amx)
+(use-package all-the-icons-ivy
+  :config
+  (all-the-icons-ivy-setup))
+(use-package ivy-prescient)
+#+END_SRC
+
+Then we initialize all the packages
+#+BEGIN_SRC emacs-lisp
+(ivy-mode 1)
+(ivy-rich-mode 1)
+(amx-mode 1)
+(ivy-prescient-mode 1)
+(counsel-mode 1)
+
+;; And some configuration
+(setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line)
+(setq ivy-use-virtual-buffers t
+      enable-recursive-minibuffers t
+      ivy-use-virtual-buffers t
+      ivy-count-format "(%d/%d) ")
+#+END_SRC
+* Mail
+We start by setting up smtpmail
+#+BEGIN_SRC emacs-lisp
+(setq message-send-mail-function 'smtpmail-send-it
+      starttls-use-gnutls t
+      smtpmail-starttls-credentials
+      '(("asmtp.unoeuro.com" 587 nil nil))
+      smtpmail-auth-credentials
+      (expand-file-name "~/.authinfo.gpg")
+      smtpmail-default-smtp-server "asmtp.unoeuro.com"
+      smtpmail-smtp-server "asmtp.unoeuro.com"
+      smtpmail-smtp-service 587
+      smtpmail-debug-info t)
+#+END_SRC
+
+We then setup wanderlust, here it should be noted a large part of the
+config resides in ~~/.wl~.
+#+BEGIN_SRC emacs-lisp
+(straight-override-recipe
+ '(semi :host github :repo "wanderlust/semi" :branch "semi-1_14-wl"))
+(straight-override-recipe
+ '(flim :host github :repo "wanderlust/flim" :branch "flim-1_14-wl"
+        :files ("*.texi" "*.el" (:exclude "md5-dl.el"
+                                          "md5-el.el" "mel-b-dl.el" "sha1-dl.el"
+                                          "smtpmail.el") "flim-pkg.el")))
+(straight-override-recipe
+ '(apel :host github :repo "wanderlust/apel" :branch "apel-wl"))
+(straight-override-recipe
+ '(wanderlust :host github :repo "wanderlust/wanderlust" :branch "master"))
+
+(use-package wanderlust
+  :ensure t
+  :no-require t)
+
+;;Wanderlust
+(require 'wl)
+(autoload 'wl "wl" "Wanderlust" t)
+(autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
+(autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
+
+;; Open ~/.wl in emacs lisp mode.
+(add-to-list 'auto-mode-alist '("\.wl$" . emacs-lisp-mode))
+#+END_SRC
+* Rust
+Install packages needed for rustic with rust-analyzer
+#+BEGIN_SRC emacs-lisp
+(use-package rustic)
+(use-package lsp-ui)
+(use-package company-lsp)
+(use-package lsp-ivy)
+(use-package company)
+(use-package company-lsp)
+#+END_SRC
+
+Initialize and configure rustic
+#+BEGIN_SRC emacs-lisp
+(setq rustic-lsp-server 'rust-analyzer)
+(remove-hook 'rustic-mode-hook 'flycheck-mode)
+                                        ;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+(setq company-tooltip-align-annotations t
+      company-idle-delay 1
+      company-show-numbers t)
+#+END_SRC
+* Magit
+Install Magit and magit forge and setup ssh agent
+#+begin_src emacs-lisp
+(use-package magit)
+(use-package forge)
+
+(use-package exec-path-from-shell)
+(exec-path-from-shell-copy-env "SSH_AGENT_PID")
+(exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+
+#+end_src
+* Misc
+** PDF viewer
+#+BEGIN_SRC emacs-lisp
+(use-package pdf-tools
+  :ensure t
+  :init
+  (pdf-tools-install))
+#+END_SRC
+** Futhark
+#+BEGIN_SRC emacs-lisp
+(use-package futhark-mode)
+#+END_SRC
+* Keybinds
+#+BEGIN_SRC emacs-lisp
+;; Turn off the most annoying keybind
+(global-unset-key (kbd "<insert>"))
+
+;; Windmove alt+←↓↑→
+(windmove-default-keybindings 'meta)
+
+(global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+(global-set-key (kbd "C-c C-r") 'ivy-resume)
+;; (global-set-key (kbd "M-x") 'counsel-M-x)
+;; (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+
+(global-set-key (kbd "<f9>") 'display-line-numbers-mode)
+(global-set-key (kbd "<f12>") 'menu-bar-mode)
+
+;; Org mode
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c a") 'org-agenda)
+
+;; Multiple cursors
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+#+END_SRC
