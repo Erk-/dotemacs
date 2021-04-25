@@ -13,8 +13,8 @@
 - [[#editor][Editor]]
 - [[#org-mode][Org mode]]
 - [[#rss][RSS]]
-- [[#disabled-irc][[Disabled] IRC]]
-- [[#disabled-ivy][[Disabled] IVY]]
+- [[#disabled-irc][{Disabled} IRC]]
+- [[#disabled-ivy][{Disabled} IVY]]
 - [[#selectrum][Selectrum]]
 - [[#mail][Mail]]
 - [[#rust][Rust]]
@@ -223,7 +223,7 @@ Set up list of feeds
         ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q" Youtube)
         ("http://feeds.reuters.com/Reuters/worldNews" News)))
 #+END_SRC
-* [Disabled] IRC
+* {Disabled} IRC
 This is all commented out because I have not used it for a long while
 #+BEGIN_SRC emacs-lisp
 ;; (use-package circe
@@ -263,7 +263,7 @@ This is all commented out because I have not used it for a long while
 ;; (defun my-circe-set-margin ()
 ;;   (setq right-margin-width 5))
 #+END_SRC
-* [Disabled] IVY
+* {Disabled} IVY
 We start by installing all the packages
 #+BEGIN_SRC emacs-lisp
 ;(use-package ivy)
