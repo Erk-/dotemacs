@@ -9,11 +9,13 @@
   - [[#intro][Intro]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
+  - [[#perspective][Perspective]]
 - [[#editor][Editor]]
 - [[#org-mode][Org mode]]
 - [[#rss][RSS]]
-- [[#irc][IRC]]
-- [[#ivy][IVY]]
+- [[#disabled-irc][[Disabled] IRC]]
+- [[#disabled-ivy][[Disabled] IVY]]
+- [[#selectrum][Selectrum]]
 - [[#mail][Mail]]
 - [[#rust][Rust]]
 - [[#magit][Magit]]
@@ -43,6 +45,8 @@
 
 ;; Danish calender
 (load-file "~/.emacs.d/lisp/da-kalender.el")
+
+(setq exec-path (append exec-path '("/home/erk/.cargo/bin")))
 #+END_SRC
 * Gui
 ** Intro
@@ -89,17 +93,10 @@ Set up some ansi colours.
 ** Fonts
 Set up fonts
 #+BEGIN_SRC emacs-lisp
-(custom-set-faces
- '(default
-    (
-     (t
-      (:family "Monofur Nerd Font Mono"
-               :foundry "unci"
-               :slant normal
-               :weight normal
-               :height 90
-               :width normal)))))
-
+;(set-frame-font "VictorMono Nerd Font 15" nil t)
+(set-face-attribute 'default t
+                    :font "VictorMono Nerd Font 15"
+                    :height 120)
 ;; Fallback font
 (set-fontset-font t 'unicode "Symbola-12" nil 'prepend)
 #+END_SRC
@@ -113,10 +110,23 @@ We start by setting the paren mode to blocks:
 
 We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
 #+BEGIN_SRC emacs-lisp
-(use-package moe-theme)
-(setq moe-theme-highlight-buffer-id nil)
-(moe-dark)
-(moe-theme-set-color 'red)
+(add-to-list 'custom-theme-load-path "~/.emacs.d/moe-theme.el/")
+(add-to-list 'load-path "~/.emacs.d/moe-theme.el/")
+(require 'moe-theme)
+;(use-package moe-theme
+;  :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev"))
+;(setq moe-theme-highlight-buffer-id nil)
+(defvar moe-theme-mode-line-color 'pueple)
+(moe-light)
+#+END_SRC
+** Perspective
+[[https://github.com/nex3/perspective-el]]
+#+BEGIN_SRC emacs-lisp
+(use-package perspective
+  :bind
+  ("C-x C-b" . counsel-switch-buffer)
+  :config
+  (persp-mode))
 #+END_SRC
 * Editor
 Indent with spaces
@@ -135,12 +145,6 @@ Install multiple-cursors, the keybinds are in the last chapter
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors)
 #+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
-#+END_SRC
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
@@ -150,12 +154,21 @@ Will have to be cleaned up!
 (use-package org-ref
   :ensure t)
 
-(require 'org-ref)
-
 (use-package org-bullets
   :ensure t)
 
-(require 'org-bullets)
+(use-package toc-org
+  :ensure t
+  :init
+  (add-hook 'org-mode-hook #'toc-org-mode))
+
+;;(use-package auctex
+;;  :ensure t)
+;;(use-package cdlatex
+;;  :ensure t)
+
+(require 'org-ref
+         'org-bullets)
 
 (org-babel-do-load-languages 'org-babel-load-languages
                              '((shell . t)
@@ -169,13 +182,7 @@ Will have to be cleaned up!
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-log-done t)
 
-(setq org-agenda-files (list "~/org/other.org"
-                             "~/org/uni.org" 
-                             "~/org/home.org"
-                             "~/org/cal.org"
-                             "~/dev/dawn/dawn.org"
-                             "~/Dokumenter/SAT/SAT.org"
-                             "~/Dokumenter/COCO/COCO.org"))
+(setq org-agenda-files (list "~/org/todo.org"))
 
 (setq org-latex-default-figure-position "H")
 
@@ -216,7 +223,7 @@ Set up list of feeds
         ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q" Youtube)
         ("http://feeds.reuters.com/Reuters/worldNews" News)))
 #+END_SRC
-* IRC
+* [Disabled] IRC
 This is all commented out because I have not used it for a long while
 #+BEGIN_SRC emacs-lisp
 ;; (use-package circe
@@ -256,34 +263,52 @@ This is all commented out because I have not used it for a long while
 ;; (defun my-circe-set-margin ()
 ;;   (setq right-margin-width 5))
 #+END_SRC
-* IVY
+* [Disabled] IVY
 We start by installing all the packages
 #+BEGIN_SRC emacs-lisp
-(use-package ivy)
-(use-package swiper)
-(use-package counsel)
-(use-package ivy-rich)
-(use-package amx)
-(use-package all-the-icons-ivy
-  :config
-  (all-the-icons-ivy-setup))
-(use-package ivy-prescient)
+;(use-package ivy)
+;(use-package swiper)
+;(use-package counsel)
+;(use-package ivy-rich)
+;(use-package amx)
+;(use-package all-the-icons-ivy
+;  :config
+;  (all-the-icons-ivy-setup))
+;(use-package ivy-prescient)
 #+END_SRC
 
 Then we initialize all the packages
 #+BEGIN_SRC emacs-lisp
-(ivy-mode 1)
-(ivy-rich-mode 1)
-(amx-mode 1)
-(ivy-prescient-mode 1)
-(counsel-mode 1)
+;(ivy-mode 1)
+;(ivy-rich-mode 1)
+;(amx-mode 1)
+;(ivy-prescient-mode 1)
+;(counsel-mode 1)
+;
+;;; And some configuration
+;(setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line)
+;(setq ivy-use-virtual-buffers t
+;      enable-recursive-minibuffers t
+;      ivy-use-virtual-buffers t
+;      ivy-count-format "(%d/%d) ")
+#+END_SRC
 
-;; And some configuration
-(setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line)
-(setq ivy-use-virtual-buffers t
-      enable-recursive-minibuffers t
-      ivy-use-virtual-buffers t
-      ivy-count-format "(%d/%d) ")
+* Selectrum
+#+BEGIN_SRC emacs-lisp
+(straight-use-package 'selectrum)
+
+(straight-use-package 'prescient)
+(straight-use-package 'selectrum-prescient)
+
+(selectrum-mode +1)
+(selectrum-prescient-mode +1)
+(prescient-persist-mode +1)
+
+(use-package marginalia
+  :bind (:map minibuffer-local-map
+              ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode))
 #+END_SRC
 * Mail
 We start by setting up smtpmail
@@ -306,14 +331,14 @@ config resides in ~~/.wl~.
 (straight-override-recipe
  '(semi :host github :repo "wanderlust/semi" :branch "semi-1_14-wl"))
 (straight-override-recipe
- '(flim :host github :repo "wanderlust/flim" :branch "flim-1_14-wl"
-        :files ("*.texi" "*.el" (:exclude "md5-dl.el"
-                                          "md5-el.el" "mel-b-dl.el" "sha1-dl.el"
-                                          "smtpmail.el") "flim-pkg.el")))
+ '(flim :host github :repo "wanderlust/flim" :branch "flim-1_14-wl"))
 (straight-override-recipe
  '(apel :host github :repo "wanderlust/apel" :branch "apel-wl"))
 (straight-override-recipe
  '(wanderlust :host github :repo "wanderlust/wanderlust" :branch "master"))
+
+;; see Wanderlust issue #156
+(add-to-list 'comp-deferred-compilation-deny-list "[/\\]mel\\.el$")
 
 (use-package wanderlust
   :ensure t
@@ -332,15 +357,16 @@ config resides in ~~/.wl~.
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
 (use-package rustic)
-(use-package lsp-ui)
-(use-package company-lsp)
-(use-package lsp-ivy)
+;;(use-package lsp-ui)
+;;(use-package lsp-ivy)
 (use-package company)
-(use-package company-lsp)
+;;(use-package company-lsp)
+(use-package eglot)
 #+END_SRC
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
+(setq rustic-lsp-client 'eglot)
 (setq rustic-lsp-server 'rust-analyzer)
 (remove-hook 'rustic-mode-hook 'flycheck-mode)
                                         ;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
@@ -354,10 +380,17 @@ Install Magit and magit forge and setup ssh agent
 (use-package magit)
 (use-package forge)
 
-(use-package exec-path-from-shell)
-(exec-path-from-shell-copy-env "SSH_AGENT_PID")
-(exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+;(use-package exec-path-from-shell)
+;(exec-path-from-shell-copy-env "SSH_AGENT_PID")
+;(exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
 
+(use-package keychain-environment
+  :init
+  (keychain-refresh-environment)
+)
+
+(use-package magit-delta)
+(add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
 * Misc
 ** PDF viewer
@@ -379,9 +412,9 @@ Install Magit and magit forge and setup ssh agent
 ;; Windmove alt+←↓↑→
 (windmove-default-keybindings 'meta)
 
-(global-set-key (kbd "C-s") 'swiper)
-(global-set-key (kbd "C-x b") 'ivy-switch-buffer)
-(global-set-key (kbd "C-c C-r") 'ivy-resume)
+;(global-set-key (kbd "C-s") 'swiper)
+;(global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+;(global-set-key (kbd "C-c C-r") 'ivy-resume)
 ;; (global-set-key (kbd "M-x") 'counsel-M-x)
 ;; (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
