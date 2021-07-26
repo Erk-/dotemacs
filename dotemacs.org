@@ -13,15 +13,20 @@
 - [[#editor][Editor]]
 - [[#org-mode][Org mode]]
 - [[#rss][RSS]]
-- [[#disabled-irc][{Disabled} IRC]]
+- [[#irc][IRC]]
 - [[#disabled-ivy][{Disabled} IVY]]
 - [[#selectrum][Selectrum]]
 - [[#mail][Mail]]
+- [[#lsp][LSP]]
 - [[#rust][Rust]]
 - [[#magit][Magit]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
   - [[#futhark][Futhark]]
+  - [[#restart-emacs][Restart emacs]]
+  - [[#vterm][Vterm]]
+  - [[#tree-sitter][Tree-Sitter]]
+  - [[#stumpvm][StumpVM]]
 - [[#keybinds][Keybinds]]
 
 * Bootstrap
@@ -37,7 +42,7 @@
 (set-language-environment "UTF-8")
 (setq
  backup-by-copying      t                         ; don't clobber symlinks
- backup-directory-alist '(("." . "~/.saves/"))    ; don't litter my fs tree
+ backup-directory-alist '(("~/.saves/"))          ; don't litter my fs tree
  delete-old-versions    t
  kept-new-versions      8
  kept-old-versions      8
@@ -93,10 +98,9 @@ Set up some ansi colours.
 ** Fonts
 Set up fonts
 #+BEGIN_SRC emacs-lisp
-;(set-frame-font "VictorMono Nerd Font 15" nil t)
 (set-face-attribute 'default t
-                    :font "VictorMono Nerd Font 15"
-                    :height 120)
+                    :font "VictorMono Nerd Font"
+                    :height 150)
 ;; Fallback font
 (set-fontset-font t 'unicode "Symbola-12" nil 'prepend)
 #+END_SRC
@@ -110,13 +114,11 @@ We start by setting the paren mode to blocks:
 
 We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'custom-theme-load-path "~/.emacs.d/moe-theme.el/")
-(add-to-list 'load-path "~/.emacs.d/moe-theme.el/")
-(require 'moe-theme)
-;(use-package moe-theme
-;  :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev"))
+(use-package moe-theme
+  :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev")
+  :ensure t)
 ;(setq moe-theme-highlight-buffer-id nil)
-(defvar moe-theme-mode-line-color 'pueple)
+(defvar moe-theme-mode-line-color 'purple)
 (moe-light)
 #+END_SRC
 ** Perspective
@@ -145,6 +147,11 @@ Install multiple-cursors, the keybinds are in the last chapter
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors)
 #+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package ctrlf)
+(ctrlf-mode +1)
+#+END_SRC
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
@@ -154,7 +161,7 @@ Will have to be cleaned up!
 (use-package org-ref
   :ensure t)
 
-(use-package org-bullets
+(use-package org-superstar
   :ensure t)
 
 (use-package toc-org
@@ -168,7 +175,8 @@ Will have to be cleaned up!
 ;;  :ensure t)
 
 (require 'org-ref
-         'org-bullets)
+         'org-superstar)
+
 
 (org-babel-do-load-languages 'org-babel-load-languages
                              '((shell . t)
@@ -178,8 +186,6 @@ Will have to be cleaned up!
 (require 'org)
 (require 'ob-dot)
 
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
 (setq org-log-done t)
 
 (setq org-agenda-files (list "~/org/todo.org"))
@@ -199,7 +205,7 @@ Will have to be cleaned up!
 (setq org-latex-pdf-process (list
                              "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
 
-(add-hook 'org-mode-hook 'org-bullets-mode)
+(add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
 (add-hook 'org-mode-hook 'auto-fill-mode)
 (add-hook 'org-mode-hook 'org-indent-mode)
 
@@ -223,37 +229,39 @@ Set up list of feeds
         ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q" Youtube)
         ("http://feeds.reuters.com/Reuters/worldNews" News)))
 #+END_SRC
-* {Disabled} IRC
-This is all commented out because I have not used it for a long while
+* IRC
 #+BEGIN_SRC emacs-lisp
-;; (use-package circe
-;;   :ensure t)
+(use-package circe
+  :ensure t)
 
-;; (setq auth-sources '("~/.authinfo.gpg"))
+(defun my-fetch-password (&rest params)
+  (require 'auth-source)
+  (let ((match (car (apply 'auth-source-search params))))
+    (if match
+        (let ((secret (plist-get match :secret)))
+          (if (functionp secret)
+              (funcall secret)
+            secret))
+      (error "Password not found for %S" params))))
 
-;; (defun my-fetch-password (&rest params)
-;;   (require 'auth-source)
-;;   (let ((match (car (apply 'auth-source-search params))))
-;;     (if match
-;;         (let ((secret (plist-get match :secret)))
-;;           (if (functionp secret)
-;;               (funcall secret)
-;;             secret))
-;;       (error "Password not found for %S" params))))
+(defun my-nickserv-password (server)
+  (my-fetch-password :login "erk" :host "irc.libera.chat"))
 
-;; (defun my-password (server)
-;;   (my-fetch-password :login "Erk" :machine "irc.freenode.net"))
+(setq circe-network-options
+      '(("Libera"
+         :host "irc.libera.chat"
+         :port 7070
+         :tls t
+         :nick "erk"
+         :sasl-username "erk"
+         :sasl-password my-nickserv-password
+         :channels ("#diku")
+         )))
 
-;; (setq circe-network-options
-;;       '(("Freenode"
-;;          :tls t
-;;          :nick "Erk"
-;;          :sasl-username "Erk"
-;;          :sasl-password my-password
-;;          ;; :channels ("#diku")
-;;          )))
+(setq circe-use-cycle-completion t)
 
-;; (setq circe-use-cycle-completion t)
+(use-package circe-notifications)
+(add-hook 'circe-server-connected-hook 'enable-circe-notifications)
 
 ;; (setq
 ;;  lui-time-stamp-position 'right-margin
@@ -296,13 +304,14 @@ Then we initialize all the packages
 * Selectrum
 #+BEGIN_SRC emacs-lisp
 (straight-use-package 'selectrum)
-
 (straight-use-package 'prescient)
 (straight-use-package 'selectrum-prescient)
+(straight-use-package 'company-prescient)
 
 (selectrum-mode +1)
 (selectrum-prescient-mode +1)
 (prescient-persist-mode +1)
+(company-prescient-mode +1)
 
 (use-package marginalia
   :bind (:map minibuffer-local-map
@@ -338,7 +347,7 @@ config resides in ~~/.wl~.
  '(wanderlust :host github :repo "wanderlust/wanderlust" :branch "master"))
 
 ;; see Wanderlust issue #156
-(add-to-list 'comp-deferred-compilation-deny-list "[/\\]mel\\.el$")
+;(add-to-list 'comp-deferred-compilation-deny-list "[/\\]mel\\.el$")
 
 (use-package wanderlust
   :ensure t
@@ -353,26 +362,29 @@ config resides in ~~/.wl~.
 ;; Open ~/.wl in emacs lisp mode.
 (add-to-list 'auto-mode-alist '("\.wl$" . emacs-lisp-mode))
 #+END_SRC
+* LSP
+Install lsp mode
+#+BEGIN_SRC emacs-lisp
+;(use-package eglot)
+
+#+END_SRC
 * Rust
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
-(use-package rustic)
-;;(use-package lsp-ui)
-;;(use-package lsp-ivy)
+(use-package lsp-mode)
+(setq lsp-keymap-prefix "C-.")
 (use-package company)
-;;(use-package company-lsp)
-(use-package eglot)
+(use-package rustic
+  :ensure t)
 #+END_SRC
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
-(setq rustic-lsp-client 'eglot)
-(setq rustic-lsp-server 'rust-analyzer)
-(remove-hook 'rustic-mode-hook 'flycheck-mode)
-                                        ;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-(setq company-tooltip-align-annotations t
-      company-idle-delay 1
-      company-show-numbers t)
+;(remove-hook 'rustic-mode-hook 'flycheck-mode)
+;                                        ;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;(setq company-tooltip-align-annotations t
+;      company-idle-delay 1
+;      company-show-numbers t)
 #+END_SRC
 * Magit
 Install Magit and magit forge and setup ssh agent
@@ -386,8 +398,7 @@ Install Magit and magit forge and setup ssh agent
 
 (use-package keychain-environment
   :init
-  (keychain-refresh-environment)
-)
+  (keychain-refresh-environment))
 
 (use-package magit-delta)
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
@@ -403,6 +414,30 @@ Install Magit and magit forge and setup ssh agent
 ** Futhark
 #+BEGIN_SRC emacs-lisp
 (use-package futhark-mode)
+#+END_SRC
+** Restart emacs
+#+BEGIN_SRC emacs-lisp
+(use-package restart-emacs)
+#+END_SRC
+** Vterm
+#+BEGIN_SRC emacs-lisp
+(use-package vterm)
+#+END_SRC
+** Tree-Sitter
+#+BEGIN_SRC emacs-lisp
+(straight-use-package 'tree-sitter)
+(straight-use-package 'tree-sitter-langs)
+
+(require 'tree-sitter)
+(require 'tree-sitter-langs)
+
+(global-tree-sitter-mode)
+(add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+#+END_SRC
+** StumpVM
+#+BEGIN_SRC emacs-lisp
+; Load stumpwm config as lisp.
+(add-to-list 'auto-mode-alist '("stumpwm/config$" . lisp-mode))
 #+END_SRC
 * Keybinds
 #+BEGIN_SRC emacs-lisp
