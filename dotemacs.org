@@ -7,6 +7,7 @@
   - [[#initial-setup][Initial setup]]
 - [[#gui][Gui]]
   - [[#intro][Intro]]
+  - [[#modeline][Modeline]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
   - [[#perspective][Perspective]]
@@ -20,6 +21,7 @@
 - [[#lsp][LSP]]
 - [[#rust][Rust]]
 - [[#magit][Magit]]
+- [[#zig][Zig]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
   - [[#futhark][Futhark]]
@@ -27,6 +29,9 @@
   - [[#vterm][Vterm]]
   - [[#tree-sitter][Tree-Sitter]]
   - [[#stumpvm][StumpVM]]
+  - [[#emacs-everywhere][Emacs Everywhere]]
+- [[#defuns][Defuns]]
+  - [[#authentication][Authentication]]
 - [[#keybinds][Keybinds]]
 
 * Bootstrap
@@ -95,16 +100,61 @@ Set up some ansi colours.
       [default default default italic underline success warning error])
 #+END_SRC
 
+Clean up the mode-line
+#+begin_src emacs-lisp
+(straight-use-package
+ '(blackout :host github :repo "raxod502/blackout"))
+(blackout 'tree-sitter)
+#+end_src
+** Modeline
+#+begin_src emacs-lisp
+;; Installer ikoner
+(use-package all-the-icons)
+
+;; Installer doom-modeline
+(use-package doom-modeline
+  :ensure t
+  :init (doom-modeline-mode 1))
+#+end_src
 ** Fonts
 Set up fonts
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute 'default t
-                    :font "VictorMono Nerd Font"
-                    :height 150)
+                    :font "Cascadia Code-12")
 ;; Fallback font
-(set-fontset-font t 'unicode "Symbola-12" nil 'prepend)
+;(set-fontset-font t 'unicode "Symbola-12" nil 'prepend)
 #+END_SRC
-
+Set up ligatures for Cascadia Code
+[[https://github.com/mickeynp/ligature.el]]
+#+begin_src emacs-lisp
+(straight-override-recipe
+ '(ligature :host github :repo "mickeynp/ligature.el" :branch "master"))
+(use-package ligature
+  :load-path "path-to-ligature-repo"
+  :config
+  ;; Enable the "www" ligature in every possible major mode
+  (ligature-set-ligatures 't '("www"))
+  ;; Enable traditional ligature support in eww-mode, if the
+  ;; `variable-pitch' face supports it
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  ;; Enable all Cascadia Code ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+				       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+				       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+				       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+				       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+				       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+				       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+				       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+				       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+				       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+				       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+				       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+				       "\\\\" "://"))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
+#+end_src
 ** Theme
 We start by setting the paren mode to blocks:
 #+BEGIN_SRC emacs-lisp
@@ -263,13 +313,23 @@ Set up list of feeds
 (use-package circe-notifications)
 (add-hook 'circe-server-connected-hook 'enable-circe-notifications)
 
-;; (setq
-;;  lui-time-stamp-position 'right-margin
-;;  lui-time-stamp-format "%H:%M")
+;; Logging
+(enable-lui-logging)
 
-;; (add-hook 'lui-mode-hook 'my-circe-set-margin)
-;; (defun my-circe-set-margin ()
-;;   (setq right-margin-width 5))
+(enable-circe-color-nicks)
+
+(setq
+ lui-time-stamp-position 'right-margin
+ lui-time-stamp-format "%H:%M")
+
+(add-hook 'lui-mode-hook 'my-circe-set-margin)
+(defun my-circe-set-margin ()
+  (setq right-margin-width 5))
+
+(eval-after-load 'lui
+  '(define-key lui-mode-map (kbd "C-c C-b") 'lui-track-bar-move))
+
+
 #+END_SRC
 * {Disabled} IVY
 We start by installing all the packages
@@ -324,12 +384,10 @@ We start by setting up smtpmail
 #+BEGIN_SRC emacs-lisp
 (setq message-send-mail-function 'smtpmail-send-it
       starttls-use-gnutls t
-      smtpmail-starttls-credentials
-      '(("asmtp.unoeuro.com" 587 nil nil))
-      smtpmail-auth-credentials
-      (expand-file-name "~/.authinfo.gpg")
-      smtpmail-default-smtp-server "asmtp.unoeuro.com"
-      smtpmail-smtp-server "asmtp.unoeuro.com"
+      smtpmail-starttls-credentials '(("smtp.simply.com" 587 nil nil))
+      smtpmail-auth-credentials (expand-file-name "~/.authinfo.gpg")
+      smtpmail-default-smtp-server "smtp.simply.com"
+      smtpmail-smtp-server "smtp.simply.com"
       smtpmail-smtp-service 587
       smtpmail-debug-info t)
 #+END_SRC
@@ -358,6 +416,9 @@ config resides in ~~/.wl~.
 (autoload 'wl "wl" "Wanderlust" t)
 (autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
 (autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
+
+;; Use ~/.authinfo.gpg for password store
+(setq elmo-passwd-storage-type 'auth-source)
 
 ;; Open ~/.wl in emacs lisp mode.
 (add-to-list 'auto-mode-alist '("\.wl$" . emacs-lisp-mode))
@@ -403,6 +464,12 @@ Install Magit and magit forge and setup ssh agent
 (use-package magit-delta)
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
+* Zig
+#+begin_src emacs-lisp
+(straight-use-package 'zig-mode)
+(setq lsp-zig-zls-executeable "/usr/bin/zls")
+(add-hook 'zig-mode-hook #'lsp)
+#+end_src
 * Misc
 ** PDF viewer
 #+BEGIN_SRC emacs-lisp
@@ -439,6 +506,45 @@ Install Magit and magit forge and setup ssh agent
 ; Load stumpwm config as lisp.
 (add-to-list 'auto-mode-alist '("stumpwm/config$" . lisp-mode))
 #+END_SRC
+** Emacs Everywhere
+[[https://github.com/tecosaur/emacs-everywhere]]
+#+begin_src emacs-lisp
+
+(straight-use-package 'emacs-everywhere)
+(require 'emacs-everywhere)
+#+end_src
+* Defuns
+** Authentication
+#+begin_src emacs-lisp
+; https://tobytripp.github.io/emacs.d/mail-in-emacs.html
+(defun erk/auth-info (&rest search-spec)
+  "Given a LOGIN to search for, return `auth-sources' that match.
+
+Valid search keys are:
+
+  - :user
+  - :host
+  - :port
+
+Setting :max will have no result as this function only returns a
+single result.  If there are multiple matches, the first will be
+returned.
+
+Results are returned as an alist with the `:secret' property
+pre-evaluated."
+
+  (dolist (default '((:max . 1) (:require . (:secret))))
+    (plist-put search-spec (car default) (cdr default)))
+
+  (let ((entry (nth 0 (apply 'auth-source-search search-spec))))
+    (mapcar (lambda (e)
+              (let ((prop  (car e))
+                    (value (if (functionp (cadr e))
+                               (funcall (cadr e))
+                             (cadr e))))
+                (cons prop value)))
+            (seq-partition entry 2))))
+#+end_src
 * Keybinds
 #+BEGIN_SRC emacs-lisp
 ;; Turn off the most annoying keybind
