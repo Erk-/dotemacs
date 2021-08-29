@@ -125,6 +125,9 @@ Set up fonts
       (select-frame frame)
       (when (display-graphic-p frame)
         (set-frame-font "Cascadia Code PL SemiLight-13"))))
+;; (add-hook 'server-switch-hook
+;;           '(set-frame-font "Cascadia Code PL SemiLight-13"))
+          
 ;; Fallback font
 ;(set-fontset-font t 'unicode "Symbola-13" nil 'prepend)
 #+END_SRC
@@ -136,7 +139,7 @@ Set up ligatures for Cascadia Code
 (use-package ligature
   :load-path "path-to-ligature-repo"
   :config
-  ;; Enable the "www" ligature in every possible major mode
+  ;; Enable the "www" ligature in every possible major mode 
   (ligature-set-ligatures 't '("www"))
   ;; Enable traditional ligature support in eww-mode, if the
   ;; `variable-pitch' face supports it
