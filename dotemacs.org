@@ -8,6 +8,7 @@
 - [[#gui][Gui]]
   - [[#intro][Intro]]
   - [[#modeline][Modeline]]
+  - [[#dashboard][Dashboard]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
   - [[#perspective][Perspective]]
@@ -47,7 +48,7 @@
 (set-language-environment "UTF-8")
 (setq
  backup-by-copying      t                         ; don't clobber symlinks
- backup-directory-alist '(("~/.saves/"))          ; don't litter my fs tree
+ backup-directory-alist '(("." . "~/.saves/"))          ; don't litter my fs tree
  delete-old-versions    t
  kept-new-versions      8
  kept-old-versions      8
@@ -115,6 +116,14 @@ Clean up the mode-line
 (use-package doom-modeline
   :ensure t
   :init (doom-modeline-mode 1))
+#+end_src
+** Dashboard
+#+begin_src emacs-lisp
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+(setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
 #+end_src
 ** Fonts
 Set up fonts
@@ -291,19 +300,6 @@ Set up list of feeds
 (use-package circe
   :ensure t)
 
-(defun my-fetch-password (&rest params)
-  (require 'auth-source)
-  (let ((match (car (apply 'auth-source-search params))))
-    (if match
-        (let ((secret (plist-get match :secret)))
-          (if (functionp secret)
-              (funcall secret)
-            secret))
-      (error "Password not found for %S" params))))
-
-(defun my-nickserv-password (server)
-  (my-fetch-password :login "erk" :host "irc.libera.chat"))
-
 (setq circe-network-options
       '(("Libera"
          :host "irc.libera.chat"
@@ -311,11 +307,12 @@ Set up list of feeds
          :tls t
          :nick "erk"
          :sasl-username "erk"
-         :sasl-password my-nickserv-password
-         :channels ("#diku")
+         :sasl-password (alist-get :secret (erk/auth-info :user "erk" :host "irc.libera.chat"))
+         :channels ("#diku" "##rust" "#twilight-rs")
          )))
 
-(setq circe-use-cycle-completion t)
+(setq circe-use-cycle-completion t
+      circe-reduce-lurker-spam t)
 
 (use-package circe-notifications)
 (add-hook 'circe-server-connected-hook 'enable-circe-notifications)
@@ -325,9 +322,8 @@ Set up list of feeds
 
 (enable-circe-color-nicks)
 
-(setq
- lui-time-stamp-position 'right-margin
- lui-time-stamp-format "%H:%M")
+(setq lui-time-stamp-position 'right-margin
+      lui-time-stamp-format "%H:%M")
 
 (add-hook 'lui-mode-hook 'my-circe-set-margin)
 (defun my-circe-set-margin ()
@@ -335,8 +331,6 @@ Set up list of feeds
 
 (eval-after-load 'lui
   '(define-key lui-mode-map (kbd "C-c C-b") 'lui-track-bar-move))
-
-
 #+END_SRC
 * {Disabled} IVY
 We start by installing all the packages
