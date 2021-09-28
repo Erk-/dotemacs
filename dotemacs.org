@@ -18,7 +18,7 @@
 - [[#irc][IRC]]
 - [[#disabled-ivy][{Disabled} IVY]]
 - [[#selectrum][Selectrum]]
-- [[#mail][Mail]]
+- [[#mail-wanderlust][Mail [Wanderlust]]]
 - [[#lsp][LSP]]
 - [[#rust][Rust]]
 - [[#magit][Magit]]
@@ -300,6 +300,9 @@ Set up list of feeds
 (use-package circe
   :ensure t)
 
+(defun libera-nickserv-password (server)
+  (alist-get :secret (erk/auth-info :user "erk" :host "irc.libera.chat")))
+
 (setq circe-network-options
       '(("Libera"
          :host "irc.libera.chat"
@@ -307,9 +310,8 @@ Set up list of feeds
          :tls t
          :nick "erk"
          :sasl-username "erk"
-         :sasl-password (alist-get :secret (erk/auth-info :user "erk" :host "irc.libera.chat"))
-         :channels ("#diku" "##rust" "#twilight-rs")
-         )))
+         :sasl-password libera-nickserv-password
+         :channels ("#diku" "##rust" "#twilight-rs"))))
 
 (setq circe-use-cycle-completion t
       circe-reduce-lurker-spam t)
@@ -374,23 +376,29 @@ Then we initialize all the packages
 (prescient-persist-mode +1)
 (company-prescient-mode +1)
 
+(define-key selectrum-minibuffer-map (kbd "C-<left>") 'selectrum-backward-kill-sexp)
+(define-key selectrum-minibuffer-map (kbd "C-<right>") 'selectrum-insert-current-candidate)
+
+
 (use-package marginalia
   :bind (:map minibuffer-local-map
               ("M-A" . marginalia-cycle))
   :init
   (marginalia-mode))
 #+END_SRC
-* Mail
+* Mail [Wanderlust]
 We start by setting up smtpmail
 #+BEGIN_SRC emacs-lisp
-(setq message-send-mail-function 'smtpmail-send-it
+(setq wl-draft-send-mail-function 'smtpmail-send-it
+      message-send-mail-function 'smtpmail-send-it
       starttls-use-gnutls t
-      smtpmail-starttls-credentials '(("smtp.simply.com" 587 nil nil))
-      smtpmail-auth-credentials (expand-file-name "~/.authinfo.gpg")
-      smtpmail-default-smtp-server "smtp.simply.com"
-      smtpmail-smtp-server "smtp.simply.com"
-      smtpmail-smtp-service 587
-      smtpmail-debug-info t)
+      smtpmail-debug-info t
+      smtpmail-default-smtp-server "smtp.fastmail.com"
+      smtpmail-local-domain "erk.dev"
+      smtpmail-smtp-user "valdemar@erk.dev"
+      smtpmail-smtp-server "smtp.fastmail.com"
+      smtpmail-stream-type 'ssl
+      smtpmail-smtp-service 465)
 #+END_SRC
 
 We then setup wanderlust, here it should be noted a large part of the
