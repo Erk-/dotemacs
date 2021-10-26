@@ -11,7 +11,7 @@
   - [[#dashboard][Dashboard]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
-  - [[#perspective][Perspective]]
+  - [[#perspective-disabled][Perspective [Disabled]]]
 - [[#editor][Editor]]
 - [[#org-mode][Org mode]]
 - [[#rss][RSS]]
@@ -183,18 +183,68 @@ We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
 (use-package moe-theme
   :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev")
   :ensure t)
-;(setq moe-theme-highlight-buffer-id nil)
+;; (setq moe-theme-highlight-buffer-id nil)
 (defvar moe-theme-mode-line-color 'purple)
 (moe-light)
 #+END_SRC
-** Perspective
+
+*** Custom semantic tokens
+#+BEGIN_SRC emacs-lisp
+;; (setq lsp-semantic-token-faces
+;;       '(("variable.reference" . (t (:inherit lsp-face-semhl-variable :slant italic)))
+;;         ("parameter.reference" . (t (inherit lsp-face-semhl-parameter :slant italic)))
+;;         ("method.static" . (t (:inherit lsp-face-semhl-method :foreground "#f0c506")))
+;;         ("method.public" . (t (:inherit lsp-face-semhl-method :foreground "#eedf54")))
+;;         ("method.library" . (t (:inherit lsp-face-semhl-method :foreground "#a5cf0a")))
+;;         ("method.library.static" . (t (:inherit lsp-face-semhl-method :foreground "#f0c506")))
+;;         ("method.trait" . (t (:inherit lsp-face-semhl-method :foreground "#cca34a")))
+;;         ("method.library.trait" . (t (:inherit lsp-face-semhl-method :foreground "#d1ce08")))
+;;         ("keyword.unsafe" . (t (:inherit lsp-face-semhl-keyword :foreground "#df732b" :slant italic)))
+;;         ("lifetime" . (t (:inherit tree-sitter-hl-face:label :foreground "#11ddcc")))
+;;         ("method.static.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b")))
+;;         ("method.declaration.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b")))
+;;         ("*.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b" :slant italic)))
+;;         ("method.library.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b")))
+;;         ("interface.library" . (t (:inherit lsp-face-semhl-interface :foreground "#8ec03e")))
+;;         ("generic.attribute" . (t (:inherit tree-sitter-hl-face:attribute :foreground "#fdf9287e")))
+;;         ("attribute.attribute" . (t (:inherit tree-sitter-hl-face:attribute :foreground "#8ec03e7e")))
+;;         ("parenthesis.attribute" . (t (:inherit tree-sitter-hl-face:attribute :foreground "#338d63")))
+;;         ("typeParameter" . (t (:inherit tree-sitter-hl-face:type.argument :foreground "#ca90fa" :weight bold)))
+;;         ("selfKeyword" . (t (:inherit lsp-face-semhl-keyword :foreground "#809dff")))
+;;         ("enum" . (t (:inherit lsp-face-semhl-keyword :foreground "#17b1d8")))
+;;         ("property" . (t (:inherit lsp-face-semhl-keyword :foreground "#75bfe7" :slant italic)))
+;;         ("parameter" . (t (:inherit lsp-face-semhl-parameter :foreground "#00afce")))
+;;         ("*.consuming" . (t (:inherit lsp-face-semhl-keyword :foreground :weight bold)))
+;;         ("namespace" . (t (:inherit lsp-face-semhl-namespace :foreground "#99bfc4")))
+;;         ("namespace.library" . (t (:inherit lsp-face-semhl-namespace :foreground "#b4c499")))
+;;         ("unresolvedReference" . (t (:inherit lsp-face-semhl-keyword :foreground "#ff493c" :slant italic)))
+;;         ("operator" . (t (:inherit tree-sitter-hl-face:operator :foreground "#d4d4d4da")))
+;;         ("comma" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
+;;         ("colon" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
+;;         ("semicolon" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
+;;         ("punctuation" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
+;;         ("brace" . (t (:inherit tree-sitter-hl-face:punctuation.bracket :foreground "#f0ddddda")))
+;;         ("parenthesis" . (t (:inherit tree-sitter-hl-face:punctuation :foreground "#d4d4d4da")))
+;;         ("builtinType" . (t (:inherit tree-sitter-hl-face:type.builtin :foreground "#b7fc89cb")))
+;;         ("angle" . (t (:inherit tree-sitter-hl-face:punctuation :foreground "#d4d4d4da")))
+;;         ("operator.controlFlow" . (t (:inherit tree-sitter-hl-face:operator :foreground "#fd8b5d")))
+;;         ("interface" . (t (:inherit lsp-face-semhl-interface :foreground "#f7ae40")))
+;;         ("typeAlias.trait" . (t (:inherit lsp-face-semhl-interface :foreground "#f1e6a3")))
+;;         ("keyword.controlFlow" . (t (:inherit lsp-face-semhl-keyword :foreground "#e689bc")))
+;;         ("keyword.async" . (t (:inherit lsp-face-semhl-keyword :foreground "#ca99f8")))
+;;         ("keyword.async.controlFlow" . (t (:inherit lsp-face-semhl-keyword :foreground "#ca99f8")))
+;;         ("macro" . (t (:inherit lsp-face-semhl-keyword :foreground "#c0b5ff")))
+;;         ("boolean" . (t (:inherit tree-sitter-hl-face:constant.builtin :foreground "#14b16f")))
+;;         ("string" . (t (:inherit lsp-face-semhl-string :foreground "#e98e6a")))))
+#+END_SRC
+** Perspective [Disabled]
 [[https://github.com/nex3/perspective-el]]
 #+BEGIN_SRC emacs-lisp
-(use-package perspective
-  :bind
-  ("C-x C-b" . counsel-switch-buffer)
-  :config
-  (persp-mode))
+;; (use-package perspective
+;;   :bind
+;;   ("C-x C-b" . counsel-switch-buffer)
+;;   :config
+;;   (persp-mode))
 #+END_SRC
 * Editor
 Indent with spaces
@@ -283,17 +333,12 @@ Will have to be cleaned up!
 Install elfeed and goodies
 #+BEGIN_SRC emacs-lisp
 (use-package elfeed)
-(use-package elfeed-goodies)
-
-(setq elfeed-goodies/tag-column-width 12)
 #+END_SRC
 
 Set up list of feeds
 #+BEGIN_SRC emacs-lisp
-(setq elfeed-feeds
-      '(("https://www.youtube.com/feeds/videos.xml?channel_id=UCH-_hzb2ILSCo9ftVSnrCIQ" Youtube)
-        ("https://www.youtube.com/feeds/videos.xml?channel_id=UCxt9Pvye-9x_AIcb1UtmF1Q" Youtube)
-        ("http://feeds.reuters.com/Reuters/worldNews" News)))
+(load "~/org/feeds.el")
+(require 'feeds)
 #+END_SRC
 * IRC
 #+BEGIN_SRC emacs-lisp
@@ -376,9 +421,12 @@ Then we initialize all the packages
 (prescient-persist-mode +1)
 (company-prescient-mode +1)
 
+;; Nicer movement between layers
 (define-key selectrum-minibuffer-map (kbd "C-<left>") 'selectrum-backward-kill-sexp)
 (define-key selectrum-minibuffer-map (kbd "C-<right>") 'selectrum-insert-current-candidate)
-
+;; Just so you don't have to keep releasing ctrl.
+(define-key selectrum-minibuffer-map (kbd "C-<up>") 'selectrum-previous-candidate)
+(define-key selectrum-minibuffer-map (kbd "C-<down>") 'selectrum-next-candidate)
 
 (use-package marginalia
   :bind (:map minibuffer-local-map
@@ -389,8 +437,8 @@ Then we initialize all the packages
 * Mail [Wanderlust]
 We start by setting up smtpmail
 #+BEGIN_SRC emacs-lisp
-(setq wl-draft-send-mail-function 'smtpmail-send-it
-      message-send-mail-function 'smtpmail-send-it
+(setq wl-draft-send-mail-function 'wl-draft-send-mail-with-sendmail
+      sendmail-program "/usr/bin/msmtp"
       starttls-use-gnutls t
       smtpmail-debug-info t
       smtpmail-default-smtp-server "smtp.fastmail.com"
@@ -412,9 +460,6 @@ config resides in ~~/.wl~.
  '(apel :host github :repo "wanderlust/apel" :branch "apel-wl"))
 (straight-override-recipe
  '(wanderlust :host github :repo "wanderlust/wanderlust" :branch "master"))
-
-;; see Wanderlust issue #156
-;(add-to-list 'comp-deferred-compilation-deny-list "[/\\]mel\\.el$")
 
 (use-package wanderlust
   :ensure t
@@ -446,7 +491,8 @@ Install lsp mode
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode)
-(setq lsp-keymap-prefix "C-.")
+(setq lsp-keymap-prefix (kbd "C-."))
+(define-key lsp-mode-map (kbd "C-.") lsp-command-map)
 (use-package company)
 (use-package rustic
   :ensure t)
@@ -454,21 +500,22 @@ Install packages needed for rustic with rust-analyzer
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
-;(remove-hook 'rustic-mode-hook 'flycheck-mode)
-;                                        ;(define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-;(setq company-tooltip-align-annotations t
-;      company-idle-delay 1
-;      company-show-numbers t)
+;; (remove-hook 'rustic-mode-hook 'flycheck-mode)
+;; (define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+;; (setq company-tooltip-align-annotations t
+;;       company-idle-delay 1
+;;       company-show-numbers t)
 #+END_SRC
 * Magit
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
 (use-package magit)
 (use-package forge)
+(use-package orgit-forge)
 
-;(use-package exec-path-from-shell)
-;(exec-path-from-shell-copy-env "SSH_AGENT_PID")
-;(exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+;; (use-package exec-path-from-shell)
+;; (exec-path-from-shell-copy-env "SSH_AGENT_PID")
+;; (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
 
 (use-package keychain-environment
   :init
