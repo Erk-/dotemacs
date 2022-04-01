@@ -1,5 +1,8 @@
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 
+;; AOT compile everything
+(setq comp-deferred-compilation t)
+
 (let ((gc-cons-percentage .6)
       (gc-cons-threshold most-positive-fixnum))
 

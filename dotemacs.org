@@ -21,6 +21,7 @@
 - [[#mail-wanderlust][Mail [Wanderlust]]]
 - [[#lsp][LSP]]
 - [[#rust][Rust]]
+- [[#ocaml][OCaml]]
 - [[#magit][Magit]]
 - [[#zig][Zig]]
 - [[#misc][Misc]]
@@ -31,6 +32,7 @@
   - [[#tree-sitter][Tree-Sitter]]
   - [[#stumpvm][StumpVM]]
   - [[#emacs-everywhere][Emacs Everywhere]]
+  - [[#godbolt][Godbolt]]
 - [[#defuns][Defuns]]
   - [[#authentication][Authentication]]
 - [[#keybinds][Keybinds]]
@@ -156,17 +158,18 @@ Set up ligatures for Cascadia Code
   ;; Enable all Cascadia Code ligatures in programming modes
   (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
 				       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
-				       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+				       "!!." ">=>" ">>=" ">>-" ">->" "->>" "-->" "---" "-<<"
 				       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
-				       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
-				       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+				       "<--" "<-<" "<<=" "<<-" "<+>" "</>" "###" "#_(" "..<"
+				       "..." "+++" "/==" "_|_" "www" "&&" "^=" "~~" "~@" "~="
 				       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
 				       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
-				       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
-				       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+				       ">=" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+				       "<$" "<=" "<>" "<-" "<+" "</" "#{" "#[" "#:" "#=" "#!"
 				       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
-				       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+				       "?=" "?." "??" ";;" "/*" "/=" "/>" "__" "~~" "(*" "*)"
 				       "\\\\" "://"))
+  ;; Disabled ligatures: (">>" "<<" "//" "///" "<<<" ">>>")
   ;; Enables ligature checks globally in all buffers. You can also do it
   ;; per mode with `ligature-mode'.
   (global-ligature-mode t))
@@ -337,8 +340,8 @@ Install elfeed and goodies
 
 Set up list of feeds
 #+BEGIN_SRC emacs-lisp
-(load "~/org/feeds.el")
-(require 'feeds)
+(when (load "~/org/feeds.el" t)
+       (require 'feeds))
 #+END_SRC
 * IRC
 #+BEGIN_SRC emacs-lisp
@@ -437,16 +440,18 @@ Then we initialize all the packages
 * Mail [Wanderlust]
 We start by setting up smtpmail
 #+BEGIN_SRC emacs-lisp
-(setq wl-draft-send-mail-function 'wl-draft-send-mail-with-sendmail
-      sendmail-program "/usr/bin/msmtp"
-      starttls-use-gnutls t
+(setq wl-draft-send-mail-function 'wl-draft-send-mail-with-smtp
+      ;; wl-draft-send-mail-function 'wl-draft-send-mail-with-sendmail
+      ;; sendmail-program "/usr/bin/msmtp"
+      ;; starttls-use-gnutls t
       smtpmail-debug-info t
       smtpmail-default-smtp-server "smtp.fastmail.com"
       smtpmail-local-domain "erk.dev"
       smtpmail-smtp-user "valdemar@erk.dev"
       smtpmail-smtp-server "smtp.fastmail.com"
       smtpmail-stream-type 'ssl
-      smtpmail-smtp-service 465)
+      smtpmail-smtp-service 465
+)
 #+END_SRC
 
 We then setup wanderlust, here it should be noted a large part of the
@@ -506,6 +511,21 @@ Initialize and configure rustic
 ;;       company-idle-delay 1
 ;;       company-show-numbers t)
 #+END_SRC
+* OCaml
+#+begin_src emacs-lisp
+;; (require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+
+;; (use-package merlin)
+;; (use-package merlin-company)
+
+;; ;;(setq merlin-command "<BIN_DIR>/ocamlmerlin")  ; needed only if ocamlmerlin not already in your PATH
+;; (add-hook 'tuareg-mode-hook #'merlin-mode)
+;; (add-hook 'caml-mode-hook #'merlin-mode)
+;; ;; Uncomment these lines if you want to enable integration with the corresponding packages
+;; ;; (require 'merlin-iedit)       ; iedit.el editing of occurrences
+;; (require 'merlin-company)     ; company.el completion
+;; ;; (require 'merlin-ac)          ; auto-complete.el completion
+#+end_src
 * Magit
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
@@ -522,6 +542,7 @@ Install Magit and magit forge and setup ssh agent
   (keychain-refresh-environment))
 
 (use-package magit-delta)
+(setq magit-delta-delta-executable "/home/erk/.cargo/bin/delta")
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
 * Zig
@@ -572,6 +593,11 @@ Install Magit and magit forge and setup ssh agent
 
 (straight-use-package 'emacs-everywhere)
 (require 'emacs-everywhere)
+#+end_src
+** Godbolt
+#+begin_src emacs-lisp
+(straight-use-package 'rmsbolt)
+(require 'rmsbolt)
 #+end_src
 * Defuns
 ** Authentication
