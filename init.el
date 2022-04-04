@@ -1,3 +1,4 @@
+(setq comp-deferred-compilation t)
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 
 ;; AOT compile everything

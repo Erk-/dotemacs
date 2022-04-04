@@ -13,9 +13,10 @@
   - [[#theme][Theme]]
   - [[#perspective-disabled][Perspective [Disabled]]]
 - [[#editor][Editor]]
+  - [[#parinfer][Parinfer]]
 - [[#org-mode][Org mode]]
 - [[#rss][RSS]]
-- [[#irc][IRC]]
+- [[#disabled-irc][{Disabled} IRC]]
 - [[#selectrum][Selectrum]]
 - [[#mail-wanderlust][Mail [Wanderlust]]]
 - [[#lsp][LSP]]
@@ -128,17 +129,17 @@ Clean up the mode-line
 ** Fonts
 Set up fonts
 #+BEGIN_SRC emacs-lisp
-(set-frame-font "Cascadia Code PL SemiLight-13")
+(defvar erk/font "Cascadia Code PL SemiLight-13" "Default font")
+
+;; Berkerley Mono
+(setq erk/font "AZTSPM+BerkeleyMono-Regular-13")
+
+(set-frame-font erk/font)
 (add-hook 'after-make-frame-functions
     `(lambda (frame)
       (select-frame frame)
       (when (display-graphic-p frame)
-        (set-frame-font "Cascadia Code PL SemiLight-13"))))
-;; (add-hook 'server-switch-hook
-;;           '(set-frame-font "Cascadia Code PL SemiLight-13"))
-          
-;; Fallback font
-;(set-fontset-font t 'unicode "Symbola-13" nil 'prepend)
+        (set-frame-font erk/font))))
 #+END_SRC
 Set up ligatures for Cascadia Code
 [[https://github.com/mickeynp/ligature.el]]
@@ -185,7 +186,7 @@ We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
   :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev")
   :ensure t)
 ;; (setq moe-theme-highlight-buffer-id nil)
-(defvar moe-theme-mode-line-color 'purple)
+(defvar moe-theme-mode-line-color 'red)
 (moe-light)
 #+END_SRC
 
@@ -269,6 +270,14 @@ Install multiple-cursors, the keybinds are in the last chapter
 (use-package ctrlf)
 (ctrlf-mode +1)
 #+END_SRC
+
+** Parinfer
+#+begin_src emacs-lisp
+(use-package parinfer-rust-mode
+    :hook emacs-lisp-mode
+    :init
+    (setq parinfer-rust-auto-download t))
+#+end_src
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
@@ -286,10 +295,10 @@ Will have to be cleaned up!
   :init
   (add-hook 'org-mode-hook #'toc-org-mode))
 
-;;(use-package auctex
-;;  :ensure t)
-;;(use-package cdlatex
-;;  :ensure t)
+; (use-package auctex
+;   :ensure t)
+; (use-package cdlatex
+;   :ensure t)
 
 (require 'org-ref
          'org-superstar)
@@ -312,15 +321,17 @@ Will have to be cleaned up!
 (setq org-src-fontify-natively t)
 
 (setq org-latex-listings 'minted)
-(setq org-latex-minted-options
-      '(("frame" "lines")
-        ("linenos=true")
-        ("breaklines=true")
-        ("escapeinside=||")
-        ("mathescape=true")))
+;; (setq org-latex-minted-options
+;;       '(("frame" "lines")
+;;         ("linenos=true")
+;;         ("breaklines=true")
+;;         ("escapeinside=||")
+;;         ("mathescape=true")))
+(setq org-latex-minted-options '())
 
-(setq org-latex-pdf-process (list
-                             "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
+
+(setq org-latex-pdf-process
+      (list "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
 
 (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
 (add-hook 'org-mode-hook 'auto-fill-mode)
@@ -341,44 +352,45 @@ Set up list of feeds
 (when (load "~/org/feeds.el" t)
        (require 'feeds))
 #+END_SRC
-* IRC
+* {Disabled} IRC
 #+BEGIN_SRC emacs-lisp
-(use-package circe
-  :ensure t)
+;; (use-package circe
+;;   :ensure t)
 
-(defun libera-nickserv-password (server)
-  (alist-get :secret (erk/auth-info :user "erk" :host "irc.libera.chat")))
+;; (defun nickserv-password (server)
+;;   (alist-get :secret (erk/auth-info :user "erk" :host server)))
 
-(setq circe-network-options
-      '(("Libera"
-         :host "irc.libera.chat"
-         :port 7070
-         :tls t
-         :nick "erk"
-         :sasl-username "erk"
-         :sasl-password libera-nickserv-password
-         :channels ("#diku" "##rust" "#twilight-rs"))))
+;; (setq circe-network-options
+;;       '(("Libera"
+;;          :host "irc.libera.chat"
+;;          :port 7070
+;;          :tls t
+;;          :nick "erk"
+;;          :sasl-username "erk"
+;;          :sasl-password nickserv-password
+;;          ;; :channels ("#diku" "##rust" "#twilight-rs")
+;;          )))
 
-(setq circe-use-cycle-completion t
-      circe-reduce-lurker-spam t)
+;; (setq circe-use-cycle-completion t
+;;       circe-reduce-lurker-spam t)
 
-(use-package circe-notifications)
-(add-hook 'circe-server-connected-hook 'enable-circe-notifications)
+;; (use-package circe-notifications)
+;; (add-hook 'circe-server-connected-hook 'enable-circe-notifications)
 
-;; Logging
-(enable-lui-logging-globally)
+;; ;; Logging
+;; (enable-lui-logging-globally)
 
-(enable-circe-color-nicks)
+;; (enable-circe-color-nicks)
 
-(setq lui-time-stamp-position 'right-margin
-      lui-time-stamp-format "%H:%M")
+;; (setq lui-time-stamp-position 'right-margin
+;;       lui-time-stamp-format "%H:%M")
 
-(add-hook 'lui-mode-hook 'my-circe-set-margin)
-(defun my-circe-set-margin ()
-  (setq right-margin-width 5))
+;; (add-hook 'lui-mode-hook 'my-circe-set-margin)
+;; (defun my-circe-set-margin ()
+;;   (setq right-margin-width 5))
 
-(eval-after-load 'lui
-  '(define-key lui-mode-map (kbd "C-c C-b") 'lui-track-bar-move))
+;; (eval-after-load 'lui
+;;   '(define-key lui-mode-map (kbd "C-c C-b") 'lui-track-bar-move))
 #+END_SRC
 * Selectrum
 #+BEGIN_SRC emacs-lisp
@@ -409,9 +421,6 @@ Set up list of feeds
 We start by setting up smtpmail
 #+BEGIN_SRC emacs-lisp
 (setq wl-draft-send-mail-function 'wl-draft-send-mail-with-smtp
-      ;; wl-draft-send-mail-function 'wl-draft-send-mail-with-sendmail
-      ;; sendmail-program "/usr/bin/msmtp"
-      ;; starttls-use-gnutls t
       smtpmail-debug-info t
       smtpmail-default-smtp-server "smtp.fastmail.com"
       smtpmail-local-domain "erk.dev"
