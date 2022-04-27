@@ -1,26 +1,31 @@
 #+TITLE: DotEmacs
 #+AUTHOR: Valdemar Erk
-
 * Table of content                                                      :TOC:
 - [[#bootstrap][Bootstrap]]
   - [[#user-information][User information]]
   - [[#initial-setup][Initial setup]]
+  - [[#authentication][Authentication]]
 - [[#gui][Gui]]
   - [[#intro][Intro]]
   - [[#modeline][Modeline]]
   - [[#dashboard][Dashboard]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
+  - [[#goggles][Goggles]]
   - [[#perspective-disabled][Perspective [Disabled]]]
 - [[#editor][Editor]]
   - [[#parinfer][Parinfer]]
+  - [[#corfu][Corfu]]
+- [[#calender][Calender]]
 - [[#org-mode][Org mode]]
+- [[#org-mode-blog][Org-mode blog]]
 - [[#rss][RSS]]
 - [[#disabled-irc][{Disabled} IRC]]
 - [[#selectrum][Selectrum]]
 - [[#mail-wanderlust][Mail [Wanderlust]]]
 - [[#lsp][LSP]]
 - [[#rust][Rust]]
+- [[#ocaml][OCaml]]
 - [[#magit][Magit]]
 - [[#zig][Zig]]
 - [[#misc][Misc]]
@@ -32,16 +37,17 @@
   - [[#stumpvm][StumpVM]]
   - [[#emacs-everywhere][Emacs Everywhere]]
   - [[#godbolt][Godbolt]]
-- [[#defuns][Defuns]]
-  - [[#authentication][Authentication]]
 - [[#keybinds][Keybinds]]
 
 * Bootstrap
 ** User information
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Valdemar Erk"
-      user-mail-address "valdemar@erk.io")
+      user-mail-address "valdemar@erk.dev")
 
+;; Matches "password" or "token"
+;; generated with (regexp-opt '("password" "token"))
+(setq authinfo-hidden "\\(?:password\\|token\\)")
 (setq auth-sources '("~/.authinfo.gpg"))
 #+END_SRC
 ** Initial setup
@@ -60,6 +66,37 @@
 
 (setq exec-path (append exec-path '("/home/erk/.cargo/bin")))
 #+END_SRC
+** Authentication
+#+begin_src emacs-lisp
+; https://tobytripp.github.io/emacs.d/mail-in-emacs.html
+(defun erk/auth-info (&rest search-spec)
+  "Given a LOGIN to search for, return `auth-sources' that match.
+
+Valid search keys are:
+
+  - :user
+  - :host
+  - :port
+
+Setting :max will have no result as this function only returns a
+single result.  If there are multiple matches, the first will be
+returned.
+
+Results are returned as an alist with the `:secret' property
+pre-evaluated."
+
+  (dolist (default '((:max . 1) (:require . (:secret))))
+    (plist-put search-spec (car default) (cdr default)))
+
+  (let ((entry (nth 0 (apply 'auth-source-search search-spec))))
+    (mapcar (lambda (e)
+              (let ((prop  (car e))
+                    (value (if (functionp (cadr e))
+                               (funcall (cadr e))
+                             (cadr e))))
+                (cons prop value)))
+            (seq-partition entry 2))))
+#+end_src
 * Gui
 ** Intro
 Set up some small things to start with:
@@ -239,6 +276,13 @@ We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
 ;;         ("boolean" . (t (:inherit tree-sitter-hl-face:constant.builtin :foreground "#14b16f")))
 ;;         ("string" . (t (:inherit lsp-face-semhl-string :foreground "#e98e6a")))))
 #+END_SRC
+** Goggles
+#+begin_src emacs-lisp
+(use-package goggles
+  :hook ((prog-mode text-mode) . goggles-mode)
+  :config
+  (setq-default goggles-pulse t))
+#+end_src
 ** Perspective [Disabled]
 [[https://github.com/nex3/perspective-el]]
 #+BEGIN_SRC emacs-lisp
@@ -278,6 +322,24 @@ Install multiple-cursors, the keybinds are in the last chapter
     :init
     (setq parinfer-rust-auto-download t))
 #+end_src
+** Corfu
+#+begin_src emacs-lisp
+;; (use-package corfu
+;;   :init
+;;   (corfu-auto t)
+;;   (global-corfu-mode))
+#+end_src
+* Calender
+#+begin_src emacs-lisp
+(use-package org-caldav)
+(setq org-caldav-url "https://caldav.fastmail.com/dav/calendars/user/valdemar@erk.dev/"
+      org-caldav-inbox nil
+      org-caldav-calendar-id nil
+      org-caldav-calendars '((:calendar-id "9BC13B04-205A-11EC-8468-5AFB85A4DFFC"
+                              :inbox "~/org/Kalender/Personlig.org"))
+      org-caldav-delete-org-entries 'always
+      org-caldab-delete-calendar-entries 'never)
+#+end_src
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
@@ -314,7 +376,7 @@ Will have to be cleaned up!
 
 (setq org-log-done t)
 
-(setq org-agenda-files (list "~/org/todo.org"))
+(setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org"))
 
 (setq org-latex-default-figure-position "H")
 
@@ -341,6 +403,55 @@ Will have to be cleaned up!
 (add-hook 'org-beamer-hook '(add-to-list 'org-beamer-environments-extra
                                          '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
 #+END_SRC
+* Org-mode blog
+Set up authentication
+#+begin_src emacs-lisp
+(setenv "SRHT_PAGES_TOKEN"
+        (alist-get :secret (erk/auth-info :host "srht" :user "pages")))
+#+end_src
+
+Install dependencies
+#+begin_src emacs-lisp
+(require 'ox-bibtex)
+#+end_src
+
+Set up the projects
+#+begin_src emacs-lisp
+(setq org-publish-project-alist
+      '(("index"
+         :base-directory "~/dev/blog/frontpage/"
+         :base-extension "org"
+         :publishing-directory "~/dev/blog/build/"
+         :publishing-function org-html-publish-to-html
+         :headline-levels 3
+         :section-numbers nil
+         :with-toc nil
+         :html-head "<link rel=\"stylesheet\"
+                  href=\"../other/mystyle.css\" type=\"text/css\"/>"
+         :html-preamble t)
+        ("orgfiles"
+         :base-directory "~/dev/blog/posts"
+         :base-extension "org"
+         :publishing-directory "~/dev/blog/build/posts/"
+         :publishing-function org-html-publish-to-html
+         :headline-levels 3
+         :section-numbers nil
+         :with-toc t
+         :html-head "<link rel=\"stylesheet\"
+                  href=\"../other/mystyle.css\" type=\"text/css\"/>"
+         :html-preamble t)
+        ("images"
+         :base-directory "~/dev/blog/images/"
+         :base-extension "\\(?:gif\\|\\(?:jp\\|pn\\|sv\\)g\\)"
+         :publishing-directory "~/dev/blog/build/images/"
+         :publishing-function org-publish-attachment)
+        ("other"
+         :base-directory "~/dev/blog/other/"
+         :base-extension "\\(?:css\\|el\\)"
+         :publishing-directory "~/dev/blog/build/other/"
+         :publishing-function org-publish-attachment)
+        ("blog" :components ("index" "orgfiles" "images" "other"))))
+#+end_src
 * RSS
 Install elfeed and goodies
 #+BEGIN_SRC emacs-lisp
@@ -488,6 +599,10 @@ Initialize and configure rustic
 ;;       company-idle-delay 1
 ;;       company-show-numbers t)
 #+END_SRC
+* OCaml
+#+begin_src emacs-lisp
+(use-package tuareg-mode)
+#+end_src
 * Magit
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
@@ -560,38 +675,6 @@ Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
 (straight-use-package 'rmsbolt)
 (require 'rmsbolt)
-#+end_src
-* Defuns
-** Authentication
-#+begin_src emacs-lisp
-; https://tobytripp.github.io/emacs.d/mail-in-emacs.html
-(defun erk/auth-info (&rest search-spec)
-  "Given a LOGIN to search for, return `auth-sources' that match.
-
-Valid search keys are:
-
-  - :user
-  - :host
-  - :port
-
-Setting :max will have no result as this function only returns a
-single result.  If there are multiple matches, the first will be
-returned.
-
-Results are returned as an alist with the `:secret' property
-pre-evaluated."
-
-  (dolist (default '((:max . 1) (:require . (:secret))))
-    (plist-put search-spec (car default) (cdr default)))
-
-  (let ((entry (nth 0 (apply 'auth-source-search search-spec))))
-    (mapcar (lambda (e)
-              (let ((prop  (car e))
-                    (value (if (functionp (cadr e))
-                               (funcall (cadr e))
-                             (cadr e))))
-                (cons prop value)))
-            (seq-partition entry 2))))
 #+end_src
 * Keybinds
 #+BEGIN_SRC emacs-lisp
