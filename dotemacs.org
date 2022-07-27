@@ -14,8 +14,10 @@
   - [[#goggles][Goggles]]
   - [[#perspective-disabled][Perspective [Disabled]]]
 - [[#editor][Editor]]
+  - [[#editorconfig][EditorConfig]]
   - [[#parinfer][Parinfer]]
   - [[#corfu][Corfu]]
+  - [[#yasnippet][Yasnippet]]
 - [[#calender][Calender]]
 - [[#org-mode][Org mode]]
 - [[#org-mode-blog][Org-mode blog]]
@@ -169,7 +171,7 @@ Set up fonts
 (defvar erk/font "Cascadia Code PL SemiLight-13" "Default font")
 
 ;; Berkerley Mono
-(setq erk/font "AZTSPM+BerkeleyMono-Regular-13")
+(setq erk/font "AZTSPM+BerkeleyMono-Regular-10")
 
 (set-frame-font erk/font)
 (add-hook 'after-make-frame-functions
@@ -181,34 +183,34 @@ Set up fonts
 Set up ligatures for Cascadia Code
 [[https://github.com/mickeynp/ligature.el]]
 #+begin_src emacs-lisp
-(straight-override-recipe
- '(ligature :host github :repo "mickeynp/ligature.el" :branch "master"))
-(use-package ligature
-  :load-path "path-to-ligature-repo"
-  :config
-  ;; Enable the "www" ligature in every possible major mode 
-  (ligature-set-ligatures 't '("www"))
-  ;; Enable traditional ligature support in eww-mode, if the
-  ;; `variable-pitch' face supports it
-  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
-  ;; Enable all Cascadia Code ligatures in programming modes
-  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
-				       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
-				       "!!." ">=>" ">>=" ">>-" ">->" "->>" "-->" "---" "-<<"
-				       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
-				       "<--" "<-<" "<<=" "<<-" "<+>" "</>" "###" "#_(" "..<"
-				       "..." "+++" "/==" "_|_" "www" "&&" "^=" "~~" "~@" "~="
-				       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
-				       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
-				       ">=" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
-				       "<$" "<=" "<>" "<-" "<+" "</" "#{" "#[" "#:" "#=" "#!"
-				       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
-				       "?=" "?." "??" ";;" "/*" "/=" "/>" "__" "~~" "(*" "*)"
-				       "\\\\" "://"))
-  ;; Disabled ligatures: (">>" "<<" "//" "///" "<<<" ">>>")
-  ;; Enables ligature checks globally in all buffers. You can also do it
-  ;; per mode with `ligature-mode'.
-  (global-ligature-mode t))
+;; (straight-override-recipe
+;;  '(ligature :host github :repo "mickeynp/ligature.el" :branch "master"))
+;; (use-package ligature
+;;   :load-path "path-to-ligature-repo"
+;;   :config
+;;   ;; Enable the "www" ligature in every possible major mode 
+;;   (ligature-set-ligatures 't '("www"))
+;;   ;; Enable traditional ligature support in eww-mode, if the
+;;   ;; `variable-pitch' face supports it
+;;   (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+;;   ;; Enable all Cascadia Code ligatures in programming modes
+;;   (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+;; 				       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+;; 				       "!!." ">=>" ">>=" ">>-" ">->" "->>" "-->" "---" "-<<"
+;; 				       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+;; 				       "<--" "<-<" "<<=" "<<-" "<+>" "</>" "###" "#_(" "..<"
+;; 				       "..." "+++" "/==" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+;; 				       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+;; 				       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+;; 				       ">=" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+;; 				       "<$" "<=" "<>" "<-" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+;; 				       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+;; 				       "?=" "?." "??" ";;" "/*" "/=" "/>" "__" "~~" "(*" "*)"
+;; 				       "\\\\" "://"))
+;;   ;; Disabled ligatures: (">>" "<<" "//" "///" "<<<" ">>>")
+;;   ;; Enables ligature checks globally in all buffers. You can also do it
+;;   ;; per mode with `ligature-mode'.
+;;   (global-ligature-mode t))
 #+end_src
 ** Theme
 We start by setting the paren mode to blocks:
@@ -314,7 +316,13 @@ Install multiple-cursors, the keybinds are in the last chapter
 (use-package ctrlf)
 (ctrlf-mode +1)
 #+END_SRC
-
+** EditorConfig
+#+begin_src emacs-lisp
+(use-package editorconfig
+  :ensure t
+  :config
+  (editorconfig-mode 1))
+#+end_src
 ** Parinfer
 #+begin_src emacs-lisp
 (use-package parinfer-rust-mode
@@ -328,6 +336,12 @@ Install multiple-cursors, the keybinds are in the last chapter
 ;;   :init
 ;;   (corfu-auto t)
 ;;   (global-corfu-mode))
+#+end_src
+** Yasnippet
+#+begin_src emacs-lisp
+(use-package yasnippet
+   :ensure t)
+(yas-reload-all)
 #+end_src
 * Calender
 #+begin_src emacs-lisp
@@ -368,7 +382,8 @@ Will have to be cleaned up!
 
 (org-babel-do-load-languages 'org-babel-load-languages
                              '((shell . t)
-                               (latex . t)))
+                               (latex . t)
+                               (python . t)))
 
 
 (require 'org)
@@ -376,7 +391,7 @@ Will have to be cleaned up!
 
 (setq org-log-done t)
 
-(setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org"))
+(setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org" "~/work/fusion.org"))
 
 (setq org-latex-default-figure-position "H")
 
@@ -415,6 +430,17 @@ Install dependencies
 (require 'ox-bibtex)
 #+end_src
 
+Preamble:
+#+begin_src html
+<nav>
+  <ul>
+    <li><a href="home.html">Home</a></li> \
+    <li><a href="blog.html">Blog</a></li> \
+    <li><a href="news.html">News</a></li> \
+  </ul> \
+</nav>
+#+end_src
+
 Set up the projects
 #+begin_src emacs-lisp
 (setq org-publish-project-alist
@@ -426,8 +452,8 @@ Set up the projects
          :headline-levels 3
          :section-numbers nil
          :with-toc nil
-         :html-head "<link rel=\"stylesheet\"
-                  href=\"../other/mystyle.css\" type=\"text/css\"/>"
+         :html-head "<link rel=\"stylesheet\" href=\"../other/emacs.css\" type=\"text/css\"/>"
+         :html_head_extra: "<link rel=\"stylesheet\" href=\"../other/main.css\" type=\"text/css\"/>"
          :html-preamble t)
         ("orgfiles"
          :base-directory "~/dev/blog/posts"
@@ -437,9 +463,16 @@ Set up the projects
          :headline-levels 3
          :section-numbers nil
          :with-toc t
-         :html-head "<link rel=\"stylesheet\"
-                  href=\"../other/mystyle.css\" type=\"text/css\"/>"
-         :html-preamble t)
+         :html-head "<link rel=\"stylesheet\" href=\"../other/emacs.css\" type=\"text/css\"/>"
+         :html_head_extra "<link rel=\"stylesheet\" href=\"../other/main.css\" type=\"text/css\"/>"
+         :html-preamble "<nav>\
+  <ul>\
+    <li><a href=\"../home.html\">Home</a></li>\
+    <li><a href=\"blog.html\">Blog</a></li>\
+    <li><a href=\"news.html\">News</a></li>\
+  </ul>\
+</nav>"
+         :html-postamble nil)
         ("images"
          :base-directory "~/dev/blog/images/"
          :base-extension "\\(?:gif\\|\\(?:jp\\|pn\\|sv\\)g\\)"
@@ -584,6 +617,9 @@ Install lsp mode
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode)
+;; Seems to be broken
+;; (add-hook 'lsp-mode-hook #'lsp-semantic-tokens-mode)
+(add-hook 'lsp-mode-hook #'yas-minor-mode)
 (setq lsp-keymap-prefix (kbd "C-."))
 (define-key lsp-mode-map (kbd "C-.") lsp-command-map)
 (use-package company)
@@ -593,6 +629,8 @@ Install packages needed for rustic with rust-analyzer
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
+(set-face-attribute 'rust-ampersand-face nil
+                    :inherit nil)
 ;; (remove-hook 'rustic-mode-hook 'flycheck-mode)
 ;; (define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 ;; (setq company-tooltip-align-annotations t
@@ -601,14 +639,14 @@ Initialize and configure rustic
 #+END_SRC
 * OCaml
 #+begin_src emacs-lisp
-(use-package tuareg-mode)
+(use-package tuareg)
 #+end_src
 * Magit
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
 (use-package magit)
 (use-package forge)
-(use-package orgit-forge)
+;; (use-package orgit-forge)
 
 ;; (use-package exec-path-from-shell)
 ;; (exec-path-from-shell-copy-env "SSH_AGENT_PID")
