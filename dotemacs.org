@@ -548,8 +548,14 @@ Set up list of feeds
 (prescient-persist-mode +1)
 (company-prescient-mode +1)
 
+(defun erk/backward-kill-sexp (&optional arg)
+  "Do not insert the path into the kill ring when going up directonaries"
+  (interactive "p")
+  (let (kill-ring)
+    (selectrum-backward-kill-sexp arg)))
+
 ;; Nicer movement between layers
-(define-key selectrum-minibuffer-map (kbd "C-<left>") 'selectrum-backward-kill-sexp)
+(define-key selectrum-minibuffer-map (kbd "C-<left>") 'erk/backward-kill-sexp)
 (define-key selectrum-minibuffer-map (kbd "C-<right>") 'selectrum-insert-current-candidate)
 ;; Just so you don't have to keep releasing ctrl.
 (define-key selectrum-minibuffer-map (kbd "C-<up>") 'selectrum-previous-candidate)
