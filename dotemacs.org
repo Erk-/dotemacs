@@ -179,6 +179,10 @@ Set up fonts
       (select-frame frame)
       (when (display-graphic-p frame)
         (set-frame-font erk/font))))
+
+(when (member "Twemoji" (font-family-list))
+  (set-fontset-font
+    t 'symbol (font-spec :family "Twemoji") nil 'prepend))
 #+END_SRC
 Set up ligatures for Cascadia Code
 [[https://github.com/mickeynp/ligature.el]]
@@ -722,8 +726,9 @@ Install Magit and magit forge and setup ssh agent
 #+end_src
 * Keybinds
 #+BEGIN_SRC emacs-lisp
-;; Turn off the most annoying keybind
+;; Turn off the most annoying keybinds
 (global-unset-key (kbd "<insert>"))
+(global-unset-key (kbd "C-z"))
 
 ;; Windmove alt+←↓↑→
 (windmove-default-keybindings 'meta)
