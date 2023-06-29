@@ -17,7 +17,7 @@
    load-prefer-newer t
    package-enable-at-startup nil)
   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-  (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+  ;(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
   (package-initialize)
 
   (defvar bootstrap-version)
@@ -37,7 +37,8 @@
   (setq straight-use-package-by-default 1)
   
   ;; Use latest Org
-  (use-package org :ensure org-plus-contrib)
+  (straight-use-package 'org)
+  ;;(use-package org :ensure org-plus-contrib)
 
   ;; Tangle configuration
   (org-babel-load-file (expand-file-name "dotemacs.org" user-emacs-directory))

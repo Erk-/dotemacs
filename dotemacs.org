@@ -30,11 +30,14 @@
 - [[#ocaml][OCaml]]
 - [[#magit][Magit]]
 - [[#zig][Zig]]
+- [[#carp][Carp]]
+- [[#dts][DTS]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
   - [[#futhark][Futhark]]
   - [[#restart-emacs][Restart emacs]]
   - [[#vterm][Vterm]]
+  - [[#emacs-eat][Emacs-EAT]]
   - [[#tree-sitter][Tree-Sitter]]
   - [[#stumpvm][StumpVM]]
   - [[#emacs-everywhere][Emacs Everywhere]]
@@ -124,6 +127,9 @@ Set up some small things to start with:
 
 ;; Fix strange size issues with tiling wms
 (setq frame-resize-pixelwise t)
+
+;; Set tabwidth to 4
+(setq tab-width 4)
 #+END_SRC
 
 Set up scrolling
@@ -153,9 +159,9 @@ Clean up the mode-line
 (use-package all-the-icons)
 
 ;; Installer doom-modeline
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
+;; (use-package doom-modeline
+;;   :ensure t
+;;   :init (doom-modeline-mode 1))
 #+end_src
 ** Dashboard
 #+begin_src emacs-lisp
@@ -171,7 +177,7 @@ Set up fonts
 (defvar erk/font "Cascadia Code PL SemiLight-13" "Default font")
 
 ;; Berkerley Mono
-(setq erk/font "AZTSPM+BerkeleyMono-Regular-10")
+(setq erk/font "Berkeley Mono-10:style=regular")
 
 (set-frame-font erk/font)
 (add-hook 'after-make-frame-functions
@@ -220,17 +226,26 @@ Set up ligatures for Cascadia Code
 We start by setting the paren mode to blocks:
 #+BEGIN_SRC emacs-lisp
 (show-paren-mode t)
-(setq show-paren-style 'expression)
+;(setq show-paren-style 'expression)
+(setq show-paren-style 'parenthesis)
 #+END_SRC
 
 We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
 #+BEGIN_SRC emacs-lisp
-(use-package moe-theme
-  :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev")
-  :ensure t)
-;; (setq moe-theme-highlight-buffer-id nil)
-(defvar moe-theme-mode-line-color 'red)
-(moe-light)
+;; (use-package moe-theme
+;;   :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev")
+;;   :ensure t)
+;; ;; (setq moe-theme-highlight-buffer-id nil)
+;; (defvar moe-theme-mode-line-color 'red)
+;; (moe-light)
+#+END_SRC
+
+On the work laptop we use OS1
+#+BEGIN_SRC emacs-lisp
+(use-package os1-theme
+  :straight (:type git :host github :repo "sashimacs/os1-theme")
+  :defer nil
+  :config (load-theme 'os1 t))
 #+END_SRC
 
 *** Custom semantic tokens
@@ -301,8 +316,8 @@ We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
 * Editor
 Indent with spaces
 #+BEGIN_SRC emacs-lisp
-(setq-default indent-tabs-mode nil)
-(setq indent-tabs-mode nil)
+(setq-default indent-tabs-mode t)
+(setq indent-tabs-mode t)
 #+END_SRC
 
 Install rainbow delimiters
@@ -364,8 +379,10 @@ Will have to be cleaned up!
 (setq org-src-preserve-indentation t
       org-edit-src-content-indentation 0)
 
-(use-package org-ref
-  :ensure t)
+(setq org-duration-format (quote h:mm))
+
+;; (use-package org-ref
+;;   :ensure t)
 
 (use-package org-superstar
   :ensure t)
@@ -380,22 +397,25 @@ Will have to be cleaned up!
 ; (use-package cdlatex
 ;   :ensure t)
 
-(require 'org-ref
-         'org-superstar)
+;;(require 'org-ref)
+(require 'org-superstar)
 
 
 (org-babel-do-load-languages 'org-babel-load-languages
                              '((shell . t)
                                (latex . t)
-                               (python . t)))
+                               (python . t)
+                               (ditaa . t)))                  
+(setq org-ditaa-jar-path "/usr/bin/ditaa")
 
-
+(require 'ox-md)
 (require 'org)
 (require 'ob-dot)
 
 (setq org-log-done t)
+(setq org-enforce-todo-dependencies t)
 
-(setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org" "~/work/fusion.org"))
+(setq org-agenda-files (list "~/work/fusion.org"))
 
 (setq org-latex-default-figure-position "H")
 
@@ -431,7 +451,7 @@ Set up authentication
 
 Install dependencies
 #+begin_src emacs-lisp
-(require 'ox-bibtex)
+;; (require 'ox-bibtex)
 #+end_src
 
 Preamble:
@@ -620,27 +640,68 @@ config resides in ~~/.wl~.
 * LSP
 Install lsp mode
 #+BEGIN_SRC emacs-lisp
-;(use-package eglot)
+(use-package eglot)
+(add-hook 'eglot--managed-mode-hook (lambda () (flymake-mode -1)))
+
+(use-package corfu
+  :straight (:files (:defaults "extensions/*"))
+  ;; Optional customizations
+  :custom
+  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  ;; (corfu-separator ?\s)          ;; Orderless field separator
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-quit-no-match nil)      ;; Never quit, even if there is no match
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+  ;; Enable Corfu only for certain modes.
+  ;; :hook ((prog-mode . corfu-mode)
+  ;;        (shell-mode . corfu-mode)
+  ;;        (eshell-mode . corfu-mode))
+
+  ;; Recommended: Enable Corfu globally.
+  ;; This is recommended since Dabbrev can be used globally (M-/).
+  ;; See also `corfu-exclude-modes'.
+  :init
+  (global-corfu-mode))
+
+
+
+(setq completion-cycle-threshold 3)
+
+;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+(setq read-extended-command-predicate
+      #'command-completion-default-include-p)
+
+;; Enable indentation+completion using the TAB key.
+;; `completion-at-point' is often bound to M-TAB.
+(setq tab-always-indent 'complete)
 
 #+END_SRC
 * Rust
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-mode)
+;; (use-package lsp-mode)
 ;; Seems to be broken
 ;; (add-hook 'lsp-mode-hook #'lsp-semantic-tokens-mode)
-(add-hook 'lsp-mode-hook #'yas-minor-mode)
-(setq lsp-keymap-prefix (kbd "C-."))
-(define-key lsp-mode-map (kbd "C-.") lsp-command-map)
+;; (add-hook 'lsp-mode-hook #'yas-minor-mode)
+;; (setq lsp-keymap-prefix (kbd "C-."))
+;; (define-key lsp-mode-map (kbd "C-.") lsp-command-map)
 (use-package company)
 (use-package rustic
+  :custom (rustic-analyzer-command '("rustup" "run" "nightly" "rust-analyzer"))
   :ensure t)
+(setq rustic-lsp-client 'eglot)
 #+END_SRC
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
-(set-face-attribute 'rust-ampersand-face nil
-                    :inherit nil)
+;(set-face-attribute 'rust-ampersand-face nil
+;                    :inherit nil)
 ;; (remove-hook 'rustic-mode-hook 'flycheck-mode)
 ;; (define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 ;; (setq company-tooltip-align-annotations t
@@ -655,26 +716,51 @@ Initialize and configure rustic
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
 (use-package magit)
-(use-package forge)
+;; (use-package forge)
 ;; (use-package orgit-forge)
 
 ;; (use-package exec-path-from-shell)
 ;; (exec-path-from-shell-copy-env "SSH_AGENT_PID")
 ;; (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
 
-(use-package keychain-environment
-  :init
-  (keychain-refresh-environment))
+;; (use-package keychain-environment
+;;   :init
+;;   (keychain-refresh-environment))
 
-(use-package magit-delta)
-(setq magit-delta-delta-executable "/home/erk/.cargo/bin/delta")
-(add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
+;; (use-package magit-delta)
+;; (setq magit-delta-delta-executable "/home/erk/.cargo/bin/delta")
+;; (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
 * Zig
 #+begin_src emacs-lisp
 (straight-use-package 'zig-mode)
 (setq lsp-zig-zls-executeable "/usr/bin/zls")
 (add-hook 'zig-mode-hook #'lsp)
+#+end_src
+* Carp
+#+BEGIN_SRC emacs-lisp
+(straight-use-package 'flycheck)
+(straight-use-package 'clojure-mode)
+
+(add-to-list 'load-path "~/dev/carp-emacs")
+
+(require 'carp-mode)
+(require 'inf-carp-mode)
+
+;; Use carp-mode for .carp files
+(add-to-list 'auto-mode-alist '("\\.carp\\'" . carp-mode))
+
+(require 'flycheck)
+(require 'carp-flycheck)
+
+(add-hook 'carp-mode-hook
+          (lambda ()
+            (flycheck-mode 1)))
+#+END_SRC
+* DTS
+Mode to enable syntax highlighting for device tree files.
+#+begin_src emacs-lisp
+(straight-use-package 'dts-mode)
 #+end_src
 * Misc
 ** PDF viewer
@@ -696,16 +782,28 @@ Install Magit and magit forge and setup ssh agent
 #+BEGIN_SRC emacs-lisp
 (use-package vterm)
 #+END_SRC
+** Emacs-EAT
+#+BEGIN_SRC emacs-lisp
+(straight-use-package
+ '(eat :type git
+       :host codeberg
+       :repo "akib/emacs-eat"
+       :files ("*.el" ("term" "term/*.el") "*.texi"
+               "*.ti" ("terminfo/e" "terminfo/e/*")
+               ("terminfo/65" "terminfo/65/*")
+               ("integration" "integration/*")
+               (:exclude ".dir-locals.el" "*-tests.el"))))
+#+END_SRC
 ** Tree-Sitter
 #+BEGIN_SRC emacs-lisp
-(straight-use-package 'tree-sitter)
-(straight-use-package 'tree-sitter-langs)
+;(straight-use-package 'tree-sitter)
+;(straight-use-package 'tree-sitter-langs)
 
-(require 'tree-sitter)
-(require 'tree-sitter-langs)
+;(require 'tree-sitter)
+;(require 'tree-sitter-langs)
 
-(global-tree-sitter-mode)
-(add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+;(global-tree-sitter-mode)
+;(add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
 #+END_SRC
 ** StumpVM
 #+BEGIN_SRC emacs-lisp
@@ -733,6 +831,9 @@ Install Magit and magit forge and setup ssh agent
 ;; Windmove alt+←↓↑→
 (windmove-default-keybindings 'meta)
 
+;; Emoji insertion
+(global-set-key (kbd "C-x ,") 'emoji-search)
+
 ;(global-set-key (kbd "C-s") 'swiper)
 ;(global-set-key (kbd "C-x b") 'ivy-switch-buffer)
 ;(global-set-key (kbd "C-c C-r") 'ivy-resume)
@@ -751,4 +852,15 @@ Install Magit and magit forge and setup ssh agent
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
+(global-set-key (kbd "<AudioPlay>") 'zone)
+
+(define-key eglot-mode-map (kbd "C-. a") 'eglot-code-actions)
+(define-key eglot-mode-map (kbd "C-. =") 'eglot-format-buffer)
+(define-key eglot-mode-map (kbd "C-. r") 'eglot-rename)
+(define-key eglot-mode-map (kbd "C-. h") 'eldoc-doc-buffer)
+(define-key eglot-mode-map (kbd "C-. q") 'eglot-shutdown)
+(define-key eglot-mode-map (kbd "C-. g") 'xref-find-references)
+(define-key eglot-mode-map (kbd "C-. n") 'flymake-goto-next-error)
+(define-key eglot-mode-map (kbd "C-. p") 'flymake-goto-prev-error)
 #+END_SRC
