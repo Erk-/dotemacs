@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Logos token
+# key: ltok
+# --
+#[token("$1")]
+$0
