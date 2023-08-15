@@ -3,42 +3,32 @@
 * Table of content                                                      :TOC:
 - [[#bootstrap][Bootstrap]]
   - [[#user-information][User information]]
+  - [[#gpg-setup][GPG Setup]]
   - [[#initial-setup][Initial setup]]
   - [[#authentication][Authentication]]
 - [[#gui][Gui]]
   - [[#intro][Intro]]
   - [[#modeline][Modeline]]
-  - [[#dashboard][Dashboard]]
   - [[#fonts][Fonts]]
   - [[#theme][Theme]]
   - [[#goggles][Goggles]]
-  - [[#perspective-disabled][Perspective [Disabled]]]
 - [[#editor][Editor]]
   - [[#editorconfig][EditorConfig]]
   - [[#parinfer][Parinfer]]
-  - [[#corfu][Corfu]]
   - [[#yasnippet][Yasnippet]]
-- [[#calender][Calender]]
 - [[#org-mode][Org mode]]
-- [[#org-mode-blog][Org-mode blog]]
 - [[#rss][RSS]]
-- [[#disabled-irc][{Disabled} IRC]]
 - [[#selectrum][Selectrum]]
 - [[#mail-wanderlust][Mail [Wanderlust]]]
 - [[#lsp][LSP]]
 - [[#rust][Rust]]
-- [[#ocaml][OCaml]]
+- [[#lean4][Lean4]]
 - [[#magit][Magit]]
-- [[#zig][Zig]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
   - [[#futhark][Futhark]]
-  - [[#restart-emacs][Restart emacs]]
   - [[#vterm][Vterm]]
   - [[#tree-sitter][Tree-Sitter]]
-  - [[#stumpvm][StumpVM]]
-  - [[#emacs-everywhere][Emacs Everywhere]]
-  - [[#godbolt][Godbolt]]
 - [[#keybinds][Keybinds]]
 
 * Bootstrap
@@ -46,18 +36,24 @@
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Valdemar Erk"
       user-mail-address "valdemar@erk.dev")
+#+END_SRC
+** GPG Setup
+#+BEGIN_SRC emacs-lisp
+;; Get pin-code popup in emacs.
+(setq epa-pinentry-mode 'loopback)
+(setq epg-pinentry-mode 'loopback)
 
-;; Matches "password" or "token"
-;; generated with (regexp-opt '("password" "token"))
-(setq authinfo-hidden "\\(?:password\\|token\\)")
-(setq auth-sources '("~/.authinfo.gpg"))
+;; If there is a Yubikey use it.
+(if (< 0 (length (shell-command-to-string "ykman list")))
+    (setq auth-sources '("~/.authinfo.gpg"))
+  (setq auth-sources '("~/empty")))
 #+END_SRC
 ** Initial setup
 #+BEGIN_SRC emacs-lisp
 (set-language-environment "UTF-8")
 (setq
  backup-by-copying      t                         ; don't clobber symlinks
- backup-directory-alist '(("." . "~/.saves/"))          ; don't litter my fs tree
+ backup-directory-alist '(("." . "~/.saves/"))    ; don't litter my fs tree
  delete-old-versions    t
  kept-new-versions      8
  kept-old-versions      8
@@ -117,7 +113,7 @@ Set up some small things to start with:
 (blink-cursor-mode -1)
 
 ;; enable column-number-mode.
-(column-number-mode)
+(column-number-mode 1)
 
 ;; Remove the scroll bar.
 (scroll-bar-mode -1)
@@ -137,8 +133,8 @@ Set up scrolling
 
 Set up some ansi colours.
 #+BEGIN_SRC emacs-lisp
-(setq ansi-color-faces-vector
-      [default default default italic underline success warning error])
+;(setq ansi-color-faces-vector
+;      [default default default italic underline success warning error])
 #+END_SRC
 
 Clean up the mode-line
@@ -150,83 +146,43 @@ Clean up the mode-line
 ** Modeline
 #+begin_src emacs-lisp
 ;; Installer ikoner
-(use-package all-the-icons)
+(use-package all-the-icons
+  :if (display-graphic-p))
 
 ;; Installer doom-modeline
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
-#+end_src
-** Dashboard
-#+begin_src emacs-lisp
-(use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook))
-(setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+;; (use-package doom-modeline
+;;   :ensure t
+;;   :init (doom-modeline-mode 1))
 #+end_src
 ** Fonts
 Set up fonts
 #+BEGIN_SRC emacs-lisp
+(add-to-list 'initial-frame-alist '(font-backend  . (harfbuzz)))
+(add-to-list 'default-frame-alist '(font-backend  . (harfbuzz)))
+
 (defvar erk/font "Cascadia Code PL SemiLight-13" "Default font")
 
 ;; Berkerley Mono
-(setq erk/font "AZTSPM+BerkeleyMono-Regular-10")
+(setq erk/font "Berkeley Mono-8:style=Regular")
 
+;; This is done in a slightly odd way to ensure it is set when
+;; starting from deamon mode.
 (set-frame-font erk/font)
 (add-hook 'after-make-frame-functions
-    `(lambda (frame)
-      (select-frame frame)
-      (when (display-graphic-p frame)
-        (set-frame-font erk/font))))
+          `(lambda (frame)
+                  (select-frame frame)
+            (when (display-graphic-p frame)
+              (set-frame-font erk/font))))
 #+END_SRC
-Set up ligatures for Cascadia Code
-[[https://github.com/mickeynp/ligature.el]]
-#+begin_src emacs-lisp
-;; (straight-override-recipe
-;;  '(ligature :host github :repo "mickeynp/ligature.el" :branch "master"))
-;; (use-package ligature
-;;   :load-path "path-to-ligature-repo"
-;;   :config
-;;   ;; Enable the "www" ligature in every possible major mode 
-;;   (ligature-set-ligatures 't '("www"))
-;;   ;; Enable traditional ligature support in eww-mode, if the
-;;   ;; `variable-pitch' face supports it
-;;   (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
-;;   ;; Enable all Cascadia Code ligatures in programming modes
-;;   (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
-;; 				       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
-;; 				       "!!." ">=>" ">>=" ">>-" ">->" "->>" "-->" "---" "-<<"
-;; 				       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
-;; 				       "<--" "<-<" "<<=" "<<-" "<+>" "</>" "###" "#_(" "..<"
-;; 				       "..." "+++" "/==" "_|_" "www" "&&" "^=" "~~" "~@" "~="
-;; 				       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
-;; 				       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
-;; 				       ">=" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
-;; 				       "<$" "<=" "<>" "<-" "<+" "</" "#{" "#[" "#:" "#=" "#!"
-;; 				       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
-;; 				       "?=" "?." "??" ";;" "/*" "/=" "/>" "__" "~~" "(*" "*)"
-;; 				       "\\\\" "://"))
-;;   ;; Disabled ligatures: (">>" "<<" "//" "///" "<<<" ">>>")
-;;   ;; Enables ligature checks globally in all buffers. You can also do it
-;;   ;; per mode with `ligature-mode'.
-;;   (global-ligature-mode t))
-#+end_src
 ** Theme
 We start by setting the paren mode to blocks:
 #+BEGIN_SRC emacs-lisp
 (show-paren-mode t)
-(setq show-paren-style 'expression)
-#+END_SRC
+;; (setq show-paren-style 'expression)
 
-We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
-#+BEGIN_SRC emacs-lisp
-(use-package moe-theme
-  :straight (:type git :host github :repo "kuanyui/moe-theme.el" :branch "dev")
-  :ensure t)
-;; (setq moe-theme-highlight-buffer-id nil)
-(defvar moe-theme-mode-line-color 'red)
-(moe-light)
+(use-package kaolin-themes
+  :config
+  (load-theme 'kaolin-dark t))
 #+END_SRC
 
 *** Custom semantic tokens
@@ -285,20 +241,11 @@ We then install the Moe theme [[https://github.com/kuanyui/moe-theme.el]]:
   :config
   (setq-default goggles-pulse t))
 #+end_src
-** Perspective [Disabled]
-[[https://github.com/nex3/perspective-el]]
-#+BEGIN_SRC emacs-lisp
-;; (use-package perspective
-;;   :bind
-;;   ("C-x C-b" . counsel-switch-buffer)
-;;   :config
-;;   (persp-mode))
-#+END_SRC
 * Editor
 Indent with spaces
 #+BEGIN_SRC emacs-lisp
-(setq-default indent-tabs-mode nil)
-(setq indent-tabs-mode nil)
+(setq-default indent-tabs-mode t)
+(setq indent-tabs-mode t)
 #+END_SRC
 
 Install rainbow delimiters
@@ -312,6 +259,7 @@ Install multiple-cursors, the keybinds are in the last chapter
 (use-package multiple-cursors)
 #+END_SRC
 
+TODO: Add keybind to exit the ctrlf mini-buffer.
 #+BEGIN_SRC emacs-lisp
 (use-package ctrlf)
 (ctrlf-mode +1)
@@ -330,163 +278,81 @@ Install multiple-cursors, the keybinds are in the last chapter
     :init
     (setq parinfer-rust-auto-download t))
 #+end_src
-** Corfu
-#+begin_src emacs-lisp
-;; (use-package corfu
-;;   :init
-;;   (corfu-auto t)
-;;   (global-corfu-mode))
-#+end_src
 ** Yasnippet
 #+begin_src emacs-lisp
 (use-package yasnippet
    :ensure t)
 (yas-reload-all)
 #+end_src
-* Calender
-#+begin_src emacs-lisp
-(use-package org-caldav)
-(setq org-caldav-url "https://caldav.fastmail.com/dav/calendars/user/valdemar@erk.dev/"
-      org-caldav-inbox nil
-      org-caldav-calendar-id nil
-      org-caldav-calendars '((:calendar-id "9BC13B04-205A-11EC-8468-5AFB85A4DFFC"
-                              :inbox "~/org/Kalender/Personlig.org"))
-      org-caldav-delete-org-entries 'always
-      org-caldab-delete-calendar-entries 'never)
-#+end_src
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
+(use-package org-contrib
+  :ensure t)
+
 (setq org-src-preserve-indentation t
       org-edit-src-content-indentation 0)
 
-(use-package org-ref
-  :ensure t)
+;; (use-package org-ref
+;;   :ensure t)
 
-(use-package org-superstar
-  :ensure t)
+;; (use-package org-superstar
+;;   :ensure t)
 
 (use-package toc-org
   :ensure t
   :init
   (add-hook 'org-mode-hook #'toc-org-mode))
 
-; (use-package auctex
-;   :ensure t)
-; (use-package cdlatex
-;   :ensure t)
+					; (use-package auctex
+					;   :ensure t)
+					; (use-package cdlatex
+					;   :ensure t)
 
-(require 'org-ref
-         'org-superstar)
-
-
-(org-babel-do-load-languages 'org-babel-load-languages
-                             '((shell . t)
-                               (latex . t)
-                               (python . t)))
+;; (require 'org-ref
+;;         'org-superstar)
 
 
-(require 'org)
-(require 'ob-dot)
+;; (org-babel-do-load-languages 'org-babel-load-languages
+;;                              '((shell . t)
+;;                                (latex . t)
+;;                                (python . t)))
 
-(setq org-log-done t)
 
-(setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org" "~/work/fusion.org"))
+;; (require 'org)
+;; (require 'ob-dot)
 
-(setq org-latex-default-figure-position "H")
+;; (setq org-log-done t)
 
-(setq org-src-fontify-natively t)
+;; (setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org"))
 
-(setq org-latex-listings 'minted)
+;; (setq org-latex-default-figure-position "H")
+
+;; (setq org-src-fontify-natively t)
+
+;; (setq org-latex-listings 'minted)
 ;; (setq org-latex-minted-options
 ;;       '(("frame" "lines")
 ;;         ("linenos=true")
 ;;         ("breaklines=true")
 ;;         ("escapeinside=||")
 ;;         ("mathescape=true")))
-(setq org-latex-minted-options '())
+;; (setq org-latex-minted-options '())
 
 
-(setq org-latex-pdf-process
-      (list "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
+;; (setq org-latex-pdf-process
+;;       (list "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
 
-(add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-(add-hook 'org-mode-hook 'auto-fill-mode)
-(add-hook 'org-mode-hook 'org-indent-mode)
+;; (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+;; (add-hook 'org-mode-hook 'auto-fill-mode)
+;; (add-hook 'org-mode-hook 'org-indent-mode)
 
 ;; Only env in beamer
-(add-hook 'org-beamer-hook '(add-to-list 'org-beamer-environments-extra
-                                         '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
+;; (add-hook 'org-beamer-hook '(add-to-list 'org-beamer-environments-extra
+;;                                          '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
 #+END_SRC
-* Org-mode blog
-Set up authentication
-#+begin_src emacs-lisp
-(setenv "SRHT_PAGES_TOKEN"
-        (alist-get :secret (erk/auth-info :host "srht" :user "pages")))
-#+end_src
-
-Install dependencies
-#+begin_src emacs-lisp
-(require 'ox-bibtex)
-#+end_src
-
-Preamble:
-#+begin_src html
-<nav>
-  <ul>
-    <li><a href="home.html">Home</a></li> \
-    <li><a href="blog.html">Blog</a></li> \
-    <li><a href="news.html">News</a></li> \
-  </ul> \
-</nav>
-#+end_src
-
-Set up the projects
-#+begin_src emacs-lisp
-(setq org-publish-project-alist
-      '(("index"
-         :base-directory "~/dev/blog/frontpage/"
-         :base-extension "org"
-         :publishing-directory "~/dev/blog/build/"
-         :publishing-function org-html-publish-to-html
-         :headline-levels 3
-         :section-numbers nil
-         :with-toc nil
-         :html-head "<link rel=\"stylesheet\" href=\"../other/emacs.css\" type=\"text/css\"/>"
-         :html_head_extra: "<link rel=\"stylesheet\" href=\"../other/main.css\" type=\"text/css\"/>"
-         :html-preamble t)
-        ("orgfiles"
-         :base-directory "~/dev/blog/posts"
-         :base-extension "org"
-         :publishing-directory "~/dev/blog/build/posts/"
-         :publishing-function org-html-publish-to-html
-         :headline-levels 3
-         :section-numbers nil
-         :with-toc t
-         :html-head "<link rel=\"stylesheet\" href=\"../other/emacs.css\" type=\"text/css\"/>"
-         :html_head_extra "<link rel=\"stylesheet\" href=\"../other/main.css\" type=\"text/css\"/>"
-         :html-preamble "<nav>\
-  <ul>\
-    <li><a href=\"../home.html\">Home</a></li>\
-    <li><a href=\"blog.html\">Blog</a></li>\
-    <li><a href=\"news.html\">News</a></li>\
-  </ul>\
-</nav>"
-         :html-postamble nil)
-        ("images"
-         :base-directory "~/dev/blog/images/"
-         :base-extension "\\(?:gif\\|\\(?:jp\\|pn\\|sv\\)g\\)"
-         :publishing-directory "~/dev/blog/build/images/"
-         :publishing-function org-publish-attachment)
-        ("other"
-         :base-directory "~/dev/blog/other/"
-         :base-extension "\\(?:css\\|el\\)"
-         :publishing-directory "~/dev/blog/build/other/"
-         :publishing-function org-publish-attachment)
-        ("blog" :components ("index" "orgfiles" "images" "other"))))
-#+end_src
 * RSS
-Install elfeed and goodies
+Install elfeed
 #+BEGIN_SRC emacs-lisp
 (use-package elfeed)
 #+END_SRC
@@ -495,46 +361,6 @@ Set up list of feeds
 #+BEGIN_SRC emacs-lisp
 (when (load "~/org/feeds.el" t)
        (require 'feeds))
-#+END_SRC
-* {Disabled} IRC
-#+BEGIN_SRC emacs-lisp
-;; (use-package circe
-;;   :ensure t)
-
-;; (defun nickserv-password (server)
-;;   (alist-get :secret (erk/auth-info :user "erk" :host server)))
-
-;; (setq circe-network-options
-;;       '(("Libera"
-;;          :host "irc.libera.chat"
-;;          :port 7070
-;;          :tls t
-;;          :nick "erk"
-;;          :sasl-username "erk"
-;;          :sasl-password nickserv-password
-;;          ;; :channels ("#diku" "##rust" "#twilight-rs")
-;;          )))
-
-;; (setq circe-use-cycle-completion t
-;;       circe-reduce-lurker-spam t)
-
-;; (use-package circe-notifications)
-;; (add-hook 'circe-server-connected-hook 'enable-circe-notifications)
-
-;; ;; Logging
-;; (enable-lui-logging-globally)
-
-;; (enable-circe-color-nicks)
-
-;; (setq lui-time-stamp-position 'right-margin
-;;       lui-time-stamp-format "%H:%M")
-
-;; (add-hook 'lui-mode-hook 'my-circe-set-margin)
-;; (defun my-circe-set-margin ()
-;;   (setq right-margin-width 5))
-
-;; (eval-after-load 'lui
-;;   '(define-key lui-mode-map (kbd "C-c C-b") 'lui-track-bar-move))
 #+END_SRC
 * Selectrum
 #+BEGIN_SRC emacs-lisp
@@ -546,7 +372,6 @@ Set up list of feeds
 (selectrum-mode +1)
 (selectrum-prescient-mode +1)
 (prescient-persist-mode +1)
-(company-prescient-mode +1)
 
 (defun erk/backward-kill-sexp (&optional arg)
   "Do not insert the path into the kill ring when going up directonaries"
@@ -613,40 +438,81 @@ config resides in ~~/.wl~.
 ;; Open ~/.wl in emacs lisp mode.
 (add-to-list 'auto-mode-alist '("\.wl$" . emacs-lisp-mode))
 #+END_SRC
+
+For Lobste.rs we use POP3 to not fill the mailserver up.
+#+begin_src emacs-lisp
+(setq elmo-maildir-folder-path "~/Mail")
+#+end_src
 * LSP
 Install lsp mode
 #+BEGIN_SRC emacs-lisp
-;(use-package eglot)
+(require 'eglot)
+(setq eglot-inlay-hints-mode nil) ;; This does not work
+(setq eglot-ignored-server-capabilities '(:inlayHintProvider)) 
 
+(use-package corfu
+  :straight (:files (:defaults "extensions/*"))
+  ;; Optional customizations
+  :custom
+  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
+  (corfu-auto t)                 ;; Enable auto completion
+  (corfu-separator ?\s)          ;; Orderless field separator
+  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-quit-no-match 'separator)
+  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
+  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
+  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
+  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
+
+  :init
+  (global-corfu-mode))
+
+
+
+(setq completion-cycle-threshold 3)
+
+;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+(setq read-extended-command-predicate
+      #'command-completion-default-include-p)
+
+;; Enable indentation+completion using the TAB key.
+;; `completion-at-point' is often bound to M-TAB.
+(setq tab-always-indent 'complete)
 #+END_SRC
 * Rust
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
-(use-package lsp-mode)
-;; Seems to be broken
-;; (add-hook 'lsp-mode-hook #'lsp-semantic-tokens-mode)
-(add-hook 'lsp-mode-hook #'yas-minor-mode)
-(setq lsp-keymap-prefix (kbd "C-."))
-(define-key lsp-mode-map (kbd "C-.") lsp-command-map)
-(use-package company)
+;;(setq lsp-keymap-prefix (kbd "C-."))
+;;(define-key lsp-mode-map (kbd "C-.") lsp-command-map)
+;;(use-package company)
 (use-package rustic
   :ensure t)
+(setq rustic-lsp-client 'eglot)
 #+END_SRC
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute 'rust-ampersand-face nil
                     :inherit nil)
+(add-hook 'rustic-mode-hook #'yas-minor-mode)
 ;; (remove-hook 'rustic-mode-hook 'flycheck-mode)
 ;; (define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 ;; (setq company-tooltip-align-annotations t
 ;;       company-idle-delay 1
 ;;       company-show-numbers t)
 #+END_SRC
-* OCaml
-#+begin_src emacs-lisp
-(use-package tuareg)
-#+end_src
+* Lean4
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package lean4-mode
+  ;;   :straight (lean4-mode
+  ;; 	       :type git
+  ;; 	       :host github
+  ;; 	       :repo "leanprover/lean4-mode"
+  ;; 	       :files ("*.el" "data"))
+  ;;     ;; to defer loading the package until required
+  ;;     :commands (lean4-mode))
+#+END_SRC
 * Magit
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
@@ -663,14 +529,8 @@ Install Magit and magit forge and setup ssh agent
   (keychain-refresh-environment))
 
 (use-package magit-delta)
-(setq magit-delta-delta-executable "/home/erk/.cargo/bin/delta")
+(setq magit-delta-delta-executable "/usr/bin/delta")
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
-#+end_src
-* Zig
-#+begin_src emacs-lisp
-(straight-use-package 'zig-mode)
-(setq lsp-zig-zls-executeable "/usr/bin/zls")
-(add-hook 'zig-mode-hook #'lsp)
 #+end_src
 * Misc
 ** PDF viewer
@@ -683,10 +543,6 @@ Install Magit and magit forge and setup ssh agent
 ** Futhark
 #+BEGIN_SRC emacs-lisp
 (use-package futhark-mode)
-#+END_SRC
-** Restart emacs
-#+BEGIN_SRC emacs-lisp
-(use-package restart-emacs)
 #+END_SRC
 ** Vterm
 #+BEGIN_SRC emacs-lisp
@@ -703,23 +559,6 @@ Install Magit and magit forge and setup ssh agent
 (global-tree-sitter-mode)
 (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
 #+END_SRC
-** StumpVM
-#+BEGIN_SRC emacs-lisp
-; Load stumpwm config as lisp.
-(add-to-list 'auto-mode-alist '("stumpwm/config$" . lisp-mode))
-#+END_SRC
-** Emacs Everywhere
-[[https://github.com/tecosaur/emacs-everywhere]]
-#+begin_src emacs-lisp
-
-(straight-use-package 'emacs-everywhere)
-(require 'emacs-everywhere)
-#+end_src
-** Godbolt
-#+begin_src emacs-lisp
-(straight-use-package 'rmsbolt)
-(require 'rmsbolt)
-#+end_src
 * Keybinds
 #+BEGIN_SRC emacs-lisp
 ;; Turn off the most annoying keybind
@@ -738,12 +577,22 @@ Install Magit and magit forge and setup ssh agent
 (global-set-key (kbd "<f12>") 'menu-bar-mode)
 
 ;; Org mode
-(global-set-key (kbd "C-c l") 'org-store-link)
-(global-set-key (kbd "C-c a") 'org-agenda)
+;; (global-set-key (kbd "C-c l") 'org-store-link)
+;; (global-set-key (kbd "C-c a") 'org-agenda)
 
 ;; Multiple cursors
 (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
 (global-set-key (kbd "C->") 'mc/mark-next-like-this)
 (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
 (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
+;; Eglot
+(define-key eglot-mode-map (kbd "C-. a") 'eglot-code-actions)
+(define-key eglot-mode-map (kbd "C-. =") 'eglot-format-buffer)
+(define-key eglot-mode-map (kbd "C-. r") 'eglot-rename)
+(define-key eglot-mode-map (kbd "C-. h") 'eldoc-doc-buffer)
+(define-key eglot-mode-map (kbd "C-. q") 'eglot-shutdown)
+(define-key eglot-mode-map (kbd "C-. g") 'xref-find-references)
+(define-key eglot-mode-map (kbd "C-. n") 'flymake-goto-next-error)
+(define-key eglot-mode-map (kbd "C-. p") 'flymake-goto-prev-error)
 #+END_SRC
