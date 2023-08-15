@@ -169,10 +169,14 @@ Set up fonts
 ;; starting from deamon mode.
 (set-frame-font erk/font)
 (add-hook 'after-make-frame-functions
-          `(lambda (frame)
-                  (select-frame frame)
-            (when (display-graphic-p frame)
-              (set-frame-font erk/font))))
+    `(lambda (frame)
+      (select-frame frame)
+      (when (display-graphic-p frame)
+        (set-frame-font erk/font))))
+
+(when (member "Twemoji" (font-family-list))
+  (set-fontset-font
+    t 'symbol (font-spec :family "Twemoji") nil 'prepend))
 #+END_SRC
 ** Theme
 We start by setting the paren mode to blocks:
@@ -561,8 +565,9 @@ Install Magit and magit forge and setup ssh agent
 #+END_SRC
 * Keybinds
 #+BEGIN_SRC emacs-lisp
-;; Turn off the most annoying keybind
+;; Turn off the most annoying keybinds
 (global-unset-key (kbd "<insert>"))
+(global-unset-key (kbd "C-z"))
 
 ;; Windmove alt+←↓↑→
 (windmove-default-keybindings 'meta)
