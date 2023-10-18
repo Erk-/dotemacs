@@ -139,9 +139,13 @@ Set up some ansi colours.
 
 Clean up the mode-line
 #+begin_src emacs-lisp
-(straight-use-package
- '(blackout :host github :repo "raxod502/blackout"))
-(blackout 'tree-sitter)
+(straight-use-package 'blackout)
+(blackout 'tree-sitter-mode)
+(blackout 'global-tree-sitter-mode)
+(blackout 'tree-sitter-hl-mode)
+(blackout 'goggles-mode)
+(blackout 'editorconfig-mode)
+(blackout 'yas-minor-mode)
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp
@@ -248,8 +252,8 @@ We start by setting the paren mode to blocks:
 * Editor
 Indent with spaces
 #+BEGIN_SRC emacs-lisp
-(setq-default indent-tabs-mode t)
-(setq indent-tabs-mode t)
+(setq-default indent-tabs-mode nil)
+(setq indent-tabs-mode nil)
 #+END_SRC
 
 Install rainbow delimiters
@@ -536,6 +540,12 @@ Install Magit and magit forge and setup ssh agent
 (setq magit-delta-delta-executable "/usr/bin/delta")
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
+* Transient
+#+BEGIN_SRC emacs-lisp
+(use-package transient)
+(require 'rust-transient)
+#+END_SRC
+
 * Misc
 ** PDF viewer
 #+BEGIN_SRC emacs-lisp
@@ -548,9 +558,17 @@ Install Magit and magit forge and setup ssh agent
 #+BEGIN_SRC emacs-lisp
 (use-package futhark-mode)
 #+END_SRC
-** Vterm
+** EAT
 #+BEGIN_SRC emacs-lisp
-(use-package vterm)
+(straight-use-package
+ '(eat :type git
+       :host codeberg
+       :repo "akib/emacs-eat"
+       :files ("*.el" ("term" "term/*.el") "*.texi"
+               "*.ti" ("terminfo/e" "terminfo/e/*")
+               ("terminfo/65" "terminfo/65/*")
+               ("integration" "integration/*")
+               (:exclude ".dir-locals.el" "*-tests.el"))))
 #+END_SRC
 ** Tree-Sitter
 #+BEGIN_SRC emacs-lisp
