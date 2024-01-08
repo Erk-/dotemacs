@@ -24,11 +24,16 @@
 - [[#rust][Rust]]
 - [[#lean4][Lean4]]
 - [[#magit][Magit]]
+- [[#consult][Consult]]
+- [[#transient][Transient]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
   - [[#futhark][Futhark]]
   - [[#vterm][Vterm]]
+  - [[#eat][EAT]]
   - [[#tree-sitter][Tree-Sitter]]
+  - [[#scratch][Scratch]]
+  - [[#rg][RG]]
 - [[#keybinds][Keybinds]]
 
 * Bootstrap
@@ -266,15 +271,10 @@ Install multiple-cursors, the keybinds are in the last chapter
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors)
 #+END_SRC
-
-TODO: Add keybind to exit the ctrlf mini-buffer.
-#+BEGIN_SRC emacs-lisp
-(use-package ctrlf)
-(ctrlf-mode +1)
-#+END_SRC
 ** EditorConfig
 #+begin_src emacs-lisp
 (use-package editorconfig
+  :blackout
   :ensure t
   :config
   (editorconfig-mode 1))
@@ -312,10 +312,10 @@ Will have to be cleaned up!
   :init
   (add-hook 'org-mode-hook #'toc-org-mode))
 
-					; (use-package auctex
-					;   :ensure t)
-					; (use-package cdlatex
-					;   :ensure t)
+;; (use-package auctex
+;;   :ensure t)
+;; (use-package cdlatex
+;;   :ensure t)
 
 ;; (require 'org-ref
 ;;         'org-superstar)
@@ -372,27 +372,23 @@ Set up list of feeds
 #+END_SRC
 * Selectrum
 #+BEGIN_SRC emacs-lisp
-(straight-use-package 'selectrum)
 (straight-use-package 'prescient)
 (straight-use-package 'selectrum-prescient)
-(straight-use-package 'company-prescient)
+(use-package vertico
+  :straight (:files (:defaults "extensions/*"))
+  :init
+  (vertico-mode))
+(straight-use-package 'vertico-prescient)
 
-(selectrum-mode +1)
-(selectrum-prescient-mode +1)
+(vertico-prescient-mode +1)
 (prescient-persist-mode +1)
 
-(defun erk/backward-kill-sexp (&optional arg)
-  "Do not insert the path into the kill ring when going up directonaries"
-  (interactive "p")
-  (let (kill-ring)
-    (selectrum-backward-kill-sexp arg)))
-
 ;; Nicer movement between layers
-(define-key selectrum-minibuffer-map (kbd "C-<left>") 'erk/backward-kill-sexp)
-(define-key selectrum-minibuffer-map (kbd "C-<right>") 'selectrum-insert-current-candidate)
+(define-key vertico-map (kbd "C-<left>") 'vertico-directory-up)
+(define-key vertico-map (kbd "C-<right>") 'vertico-insert)
 ;; Just so you don't have to keep releasing ctrl.
-(define-key selectrum-minibuffer-map (kbd "C-<up>") 'selectrum-previous-candidate)
-(define-key selectrum-minibuffer-map (kbd "C-<down>") 'selectrum-next-candidate)
+(define-key vertico-map (kbd "C-<up>") 'vertico-previous)
+(define-key vertico-map (kbd "C-<down>") 'vertico-next)
 
 (use-package marginalia
   :bind (:map minibuffer-local-map
@@ -454,9 +450,14 @@ For Lobste.rs we use POP3 to not fill the mailserver up.
 * LSP
 Install lsp mode
 #+BEGIN_SRC emacs-lisp
+(use-package eglot)
 (require 'eglot)
 (setq eglot-inlay-hints-mode nil) ;; This does not work
-(setq eglot-ignored-server-capabilities '(:inlayHintProvider)) 
+(setq eglot-ignored-server-capabilities '(:inlayHintProvider))
+(add-to-list 'eglot-server-programs
+             `(rust-mode . ("rust-analyzer" :initializationOptions
+                            ( :procMacro (:enable t)
+                              :cargo ( :buildScripts (:enable t))))))
 
 (use-package corfu
   :straight (:files (:defaults "extensions/*"))
@@ -540,6 +541,65 @@ Install Magit and magit forge and setup ssh agent
 (setq magit-delta-delta-executable "/usr/bin/delta")
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
+* Consult
+#+BEGIN_SRC emacs-lisp
+;; Example configuration for Consult
+(use-package consult
+  ;; Replace bindings. Lazily loaded due by `use-package'.
+  :bind (;; C-c bindings in `mode-specific-map'
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-s d" . consult-find)
+         ("M-s D" . consult-locate)
+         ("M-s r" . consult-ripgrep)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ("C-." . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi))           ;; needed by consult-line to detect isearch
+
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
+  :config
+
+  (setq consult-preview-key 'any)
+
+  (consult-customize
+   consult-theme :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-bookmark consult--source-file-register
+   consult--source-recent-file consult--source-project-recent-file
+   ;; :preview-key "M-."
+   :preview-key '(:debounce 0.4 any))
+
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<")) ;; "C-+"
+
+(use-package orderless
+  :ensure t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
+
+(use-package affe
+  :config
+  ;; Manual preview key for `affe-grep'
+  (consult-customize affe-grep :preview-key "m-o"))
+
+(defun affe-orderless-regexp-compiler (input _type _ignorecase)
+  (setq input (orderless-pattern-componsiler input))
+  (cons input (apply-partially #'orderless--highlight input t)))
+(setq affe-regexp-compiler #'affe-orderless-regexp-compiler)
+#+END_SRC
 * Transient
 #+BEGIN_SRC emacs-lisp
 (use-package transient)
@@ -581,6 +641,17 @@ Install Magit and magit forge and setup ssh agent
 (global-tree-sitter-mode)
 (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
 #+END_SRC
+** Scratch
+#+begin_src emacs-lisp
+(straight-use-package 'scratch)
+(global-set-key (kbd "C-c s") #'scratch)
+#+end_src
+** RG
+#+begin_src emacs-lisp
+(straight-use-package 'rg)
+(global-set-key (kbd "C-c r") #'rg)
+(global-set-key (kbd "C-c t") #'rg-menu)
+#+end_src
 * Keybinds
 #+BEGIN_SRC emacs-lisp
 ;; Turn off the most annoying keybinds
@@ -590,9 +661,9 @@ Install Magit and magit forge and setup ssh agent
 ;; Windmove alt+←↓↑→
 (windmove-default-keybindings 'meta)
 
-;(global-set-key (kbd "C-s") 'swiper)
-;(global-set-key (kbd "C-x b") 'ivy-switch-buffer)
-;(global-set-key (kbd "C-c C-r") 'ivy-resume)
+;; (global-set-key (kbd "C-s") 'swiper)
+;; (global-set-key (kbd "C-x b") 'ivy-switch-buffer)
+;; (global-set-key (kbd "C-c C-r") 'ivy-resume)
 ;; (global-set-key (kbd "M-x") 'counsel-M-x)
 ;; (global-set-key (kbd "C-x C-f") 'counsel-find-file)
 
@@ -616,6 +687,7 @@ Install Magit and magit forge and setup ssh agent
 (define-key eglot-mode-map (kbd "C-. h") 'eldoc-doc-buffer)
 (define-key eglot-mode-map (kbd "C-. q") 'eglot-shutdown)
 (define-key eglot-mode-map (kbd "C-. g") 'xref-find-references)
+(define-key eglot-mode-map (kbd "C-. i") 'eglot-find-implementation)
 (define-key eglot-mode-map (kbd "C-. n") 'flymake-goto-next-error)
 (define-key eglot-mode-map (kbd "C-. p") 'flymake-goto-prev-error)
 #+END_SRC
