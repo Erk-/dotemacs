@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: Danish Locale
+# key: lld
+# --
+LOCALES.lookup_with_args(&DANISH, "$0", &args);

@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: ifleterr
+# key: ile
+# --
+if let Err(why) = $1 {
+   warn!(
+        reason = %why,
+        line = line!(),
+        "could not send",
+   );
+}

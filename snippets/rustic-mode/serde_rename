@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: Serde rename
+# key: sern
+# --
+#[serde(rename = "$1")]
+$0

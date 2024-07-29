@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: ocppkv
+# key: ocppkv
+# --
+KeyValue {
+     key: "$1".to_owned(),
+     readonly: false,
+     value: Some("$0".to_owned()),
+},
