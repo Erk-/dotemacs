@@ -148,7 +148,7 @@
 	(holiday-fixed 1 6 "Hellige 3 konger")
 
 	;; Easter and Pentecost
-	(filter-visible-calendar-holidays
+	(holiday-filter-visible-calendar
 	 (mapcar
 	  (lambda (dag)
 	    (list (calendar-gregorian-from-absolute

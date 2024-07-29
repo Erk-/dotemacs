@@ -1,8 +1,13 @@
-(setq comp-deferred-compilation t)
 (add-to-list 'load-path "~/.emacs.d/lisp/")
 
 ;; AOT compile everything
 (setq comp-deferred-compilation t)
+
+;; Performance variables.
+(setq gc-cons-threshold (* 1024 1024 1024)
+      jit-lock-defer-time 0.05
+      read-process-output-max (* 1024 1024)
+      package-native-compile t)
 
 (let ((gc-cons-percentage .6)
       (gc-cons-threshold most-positive-fixnum))

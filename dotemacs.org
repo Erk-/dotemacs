@@ -9,8 +9,8 @@
 - [[#gui][Gui]]
   - [[#intro][Intro]]
   - [[#modeline][Modeline]]
-  - [[#fonts][Fonts]]
   - [[#theme][Theme]]
+  - [[#fonts][Fonts]]
   - [[#goggles][Goggles]]
 - [[#editor][Editor]]
   - [[#editorconfig][EditorConfig]]
@@ -25,11 +25,12 @@
 - [[#lean4][Lean4]]
 - [[#magit][Magit]]
 - [[#consult][Consult]]
+- [[#emms][EMMS]]
 - [[#transient][Transient]]
+- [[#work][Work]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
   - [[#futhark][Futhark]]
-  - [[#vterm][Vterm]]
   - [[#eat][EAT]]
   - [[#tree-sitter][Tree-Sitter]]
   - [[#scratch][Scratch]]
@@ -51,10 +52,14 @@
 ;; If there is a Yubikey use it.
 (if (< 0 (length (shell-command-to-string "ykman list")))
     (setq auth-sources '("~/.authinfo.gpg"))
-  (setq auth-sources '("~/empty")))
+  (setq auth-sources '("~/.authinfo")))
 #+END_SRC
 ** Initial setup
 #+BEGIN_SRC emacs-lisp
+(setq custom-file "~/.emacs-custom.el")
+(if (file-readable-p custom-file)
+    (load custom-file))
+
 (set-language-environment "UTF-8")
 (setq
  backup-by-copying      t                         ; don't clobber symlinks
@@ -154,15 +159,42 @@ Clean up the mode-line
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp
-;; Installer ikoner
-(use-package all-the-icons
-  :if (display-graphic-p))
+  ;; Installer ikoner
 
-;; Installer doom-modeline
-;; (use-package doom-modeline
-;;   :ensure t
-;;   :init (doom-modeline-mode 1))
+      (straight-use-package 'all-the-icons)
+
+  ;; Installer doom-modeline
+  ;; (use-package doom-modeline
+  ;;   :ensure t
+  ;;   :init (doom-modeline-mode 1))
 #+end_src
+** Theme
+We start by setting the paren mode to blocks:
+#+BEGIN_SRC emacs-lisp
+(show-paren-mode t)
+;; (setq show-paren-style 'expression)
+
+(use-package moe-theme)
+
+;; Show highlighted buffer-id as decoration. (Default: nil)
+(setq moe-theme-highlight-buffer-id t)
+
+;; Resize titles (optional).
+(setq moe-theme-resize-title-markdown '(1.5 1.4 1.3 1.2 1.0 1.0))
+(setq moe-theme-resize-title-org '(1.5 1.4 1.3 1.2 1.1 1.0 1.0 1.0 1.0))
+(setq moe-theme-resize-title-rst '(1.5 1.4 1.3 1.2 1.1 1.0))
+
+;; Choose a color for modeline.(Default: blue)
+(setq moe-theme-modeline-color 'cyan)
+
+;; Finally, apply moe-theme now.
+;; Choose what you like, (moe-light) or (moe-dark)
+(moe-dark)
+
+(custom-theme-set-faces
+ 'moe-dark
+ '(tree-sitter-hl-face:comment ((,class (:background unspecified :foreground ,moe-dark-comment :slant italic)))))
+#+END_SRC
 ** Fonts
 Set up fonts
 #+BEGIN_SRC emacs-lisp
@@ -172,30 +204,31 @@ Set up fonts
 (defvar erk/font "Cascadia Code PL SemiLight-13" "Default font")
 
 ;; Berkerley Mono
-(setq erk/font "Berkeley Mono-8:style=Regular")
+(setq erk/font "Berkeley Mono-10:style=Regular")
 
 ;; This is done in a slightly odd way to ensure it is set when
 ;; starting from deamon mode.
-(set-frame-font erk/font)
-(add-hook 'after-make-frame-functions
-    `(lambda (frame)
-      (select-frame frame)
-      (when (display-graphic-p frame)
-        (set-frame-font erk/font))))
+(set-frame-font erk/font nil t)
 
-(when (member "Twemoji" (font-family-list))
-  (set-fontset-font
-    t 'symbol (font-spec :family "Twemoji") nil 'prepend))
-#+END_SRC
-** Theme
-We start by setting the paren mode to blocks:
-#+BEGIN_SRC emacs-lisp
-(show-paren-mode t)
-;; (setq show-paren-style 'expression)
+;; (set-face-attribute 'default nil :height 140)
+;; (defun fontify-frame (frame)
+;;   (set-frame-parameter frame 'font erk/font))
 
-(use-package kaolin-themes
-  :config
-  (load-theme 'kaolin-dark t))
+;; Fontify current frame
+;(fontify-frame nil)
+;; Fontify any future frames
+;; (push 'fontify-frame after-make-frame-functions) 
+;; (add-hook 'after-make-frame-functions
+;;           `(lambda (frame)
+;;              (select-frame frame)
+;;              (when (display-graphic-p frame)
+;;                (set-frame-font erk/font))))
+
+;; (set-face-attribute 'default nil :height 140)
+
+;; (when (member "Twemoji" (font-family-list))
+;;   (set-fontset-font
+;;    t 'symbol (font-spec :family "Twemoji") nil 'prepend))
 #+END_SRC
 
 *** Custom semantic tokens
@@ -320,6 +353,11 @@ Will have to be cleaned up!
 ;; (require 'org-ref
 ;;         'org-superstar)
 
+(straight-use-package 'ox-gfm)
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((plantuml . t)))
 
 ;; (org-babel-do-load-languages 'org-babel-load-languages
 ;;                              '((shell . t)
@@ -333,6 +371,7 @@ Will have to be cleaned up!
 ;; (setq org-log-done t)
 
 ;; (setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org"))
+(setq org-agenda-files (list "~/org/nerve.org"))
 
 ;; (setq org-latex-default-figure-position "H")
 
@@ -450,6 +489,10 @@ For Lobste.rs we use POP3 to not fill the mailserver up.
 * LSP
 Install lsp mode
 #+BEGIN_SRC emacs-lisp
+(require 'yasnippet)
+
+(use-package go-mode)
+
 (use-package eglot)
 (require 'eglot)
 (setq eglot-inlay-hints-mode nil) ;; This does not work
@@ -457,7 +500,8 @@ Install lsp mode
 (add-to-list 'eglot-server-programs
              `(rust-mode . ("rust-analyzer" :initializationOptions
                             ( :procMacro (:enable t)
-                              :cargo ( :buildScripts (:enable t))))))
+                              :cargo ( :buildScripts (:enable t)))))
+             `(go-mode . ("/home/erk/go/bin/gopls")))
 
 (use-package corfu
   :straight (:files (:defaults "extensions/*"))
@@ -495,15 +539,18 @@ Install packages needed for rustic with rust-analyzer
 ;;(setq lsp-keymap-prefix (kbd "C-."))
 ;;(define-key lsp-mode-map (kbd "C-.") lsp-command-map)
 ;;(use-package company)
-(use-package rustic
-  :ensure t)
+(straight-use-package
+ '(rustic :type git
+          :host github
+          :repo "emacs-rustic/rustic"))
+
 (setq rustic-lsp-client 'eglot)
 #+END_SRC
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
-(set-face-attribute 'rust-ampersand-face nil
-                    :inherit nil)
+;; (set-face-attribute 'rust-ampersand-face nil
+;;                     :inherit nil)
 (add-hook 'rustic-mode-hook #'yas-minor-mode)
 ;; (remove-hook 'rustic-mode-hook 'flycheck-mode)
 ;; (define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
@@ -526,19 +573,29 @@ Initialize and configure rustic
 Install Magit and magit forge and setup ssh agent
 #+begin_src emacs-lisp
 (use-package magit)
-(use-package forge)
-;; (use-package orgit-forge)
+(use-package forge
+  :after magit)
+ ;; (use-package orgit-forge)
 
-;; (use-package exec-path-from-shell)
-;; (exec-path-from-shell-copy-env "SSH_AGENT_PID")
-;; (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
+ ;; (use-package exec-path-from-shell)
+ ;; (exec-path-from-shell-copy-env "SSH_AGENT_PID")
+ ;; (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
 
 (use-package keychain-environment
   :init
   (keychain-refresh-environment))
 
-(use-package magit-delta)
-(setq magit-delta-delta-executable "/usr/bin/delta")
+(use-package magit-delta
+  :after magit)
+(setq magit-delta-delta-executable "/usr/bin/delta"
+      magit-delta-hide-plus-minus-markers nil
+      magit-delta-default-dark-theme "DarkNeon"
+      magit-delta-default-light-theme "1337")
+
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
+
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
 * Consult
@@ -584,11 +641,15 @@ Install Magit and magit forge and setup ssh agent
   ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<")) ;; "C-+"
 
+(use-package consult-yasnippet)
+(require 'consult-yasnippet)
+
 (use-package orderless
   :ensure t
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-overrides '((file (styles basic partial-completion)))))
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package affe
   :config
@@ -600,12 +661,28 @@ Install Magit and magit forge and setup ssh agent
   (cons input (apply-partially #'orderless--highlight input t)))
 (setq affe-regexp-compiler #'affe-orderless-regexp-compiler)
 #+END_SRC
+* EMMS
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'auto-mode-alist '(".*\.emms$" . emacs-lisp-mode))
+(use-package emms)
+(require 'emms-setup)
+(emms-all)
+(setq emms-player-list '(emms-player-mpv)
+      emms-info-functions '(emms-info-native))
+(require 'emms-streams)
+(customize-set-variable 'emms-player-mpv-update-metadata t)
+#+END_SRC
 * Transient
 #+BEGIN_SRC emacs-lisp
 (use-package transient)
 (require 'rust-transient)
 #+END_SRC
 
+* Work
+#+BEGIN_SRC emacs-lisp
+ (if (string= (system-name) "fedora")
+     (require 'work))
+#+END_SRC
 * Misc
 ** PDF viewer
 #+BEGIN_SRC emacs-lisp
