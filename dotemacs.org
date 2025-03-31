@@ -14,25 +14,24 @@
   - [[#goggles][Goggles]]
 - [[#editor][Editor]]
   - [[#editorconfig][EditorConfig]]
-  - [[#parinfer][Parinfer]]
-  - [[#yasnippet][Yasnippet]]
+  - [[#parinfer--smart-parens][Parinfer / Smart Parens]]
+  - [[#temple][Temple]]
 - [[#org-mode][Org mode]]
 - [[#rss][RSS]]
 - [[#selectrum][Selectrum]]
 - [[#mail-wanderlust][Mail [Wanderlust]]]
 - [[#lsp][LSP]]
+- [[#zig][Zig]]
 - [[#rust][Rust]]
-- [[#lean4][Lean4]]
+- [[#typst][Typst]]
 - [[#magit][Magit]]
 - [[#consult][Consult]]
-- [[#emms][EMMS]]
 - [[#transient][Transient]]
 - [[#work][Work]]
 - [[#misc][Misc]]
   - [[#pdf-viewer][PDF viewer]]
   - [[#futhark][Futhark]]
   - [[#eat][EAT]]
-  - [[#tree-sitter][Tree-Sitter]]
   - [[#scratch][Scratch]]
   - [[#rg][RG]]
 - [[#keybinds][Keybinds]]
@@ -50,9 +49,10 @@
 (setq epg-pinentry-mode 'loopback)
 
 ;; If there is a Yubikey use it.
-(if (< 0 (length (shell-command-to-string "ykman list")))
-    (setq auth-sources '("~/.authinfo.gpg"))
-  (setq auth-sources '("~/.authinfo")))
+;; (if (< 0 (length (shell-command-to-string "ykman list")))
+;;     (setq auth-sources '("~/.authinfo.gpg"))
+;;   (setq auth-sources '("~/.authinfo")))
+(setq auth-sources '("~/.authinfo"))
 #+END_SRC
 ** Initial setup
 #+BEGIN_SRC emacs-lisp
@@ -139,6 +139,17 @@ Set up scrolling
       scroll-step                   1                   ;; keyboard scroll one line at a time
       mouse-wheel-progressive-speed nil                 ;; don't accelerate scrollin
       mouse-wheel-scroll-amount     '(1 ((shift) . 1))) ;; one line at a time
+
+(use-package ultra-scroll
+  :straight (ultra-scroll
+	     :type git
+	     :host github
+	     :repo "jdtsmith/ultra-scroll")
+  :init
+  (setq scroll-conservatively 101 ; important!
+        scroll-margin 0) 
+  :config
+  (ultra-scroll-mode 1))
 #+END_SRC
 
 Set up some ansi colours.
@@ -150,12 +161,9 @@ Set up some ansi colours.
 Clean up the mode-line
 #+begin_src emacs-lisp
 (straight-use-package 'blackout)
-(blackout 'tree-sitter-mode)
-(blackout 'global-tree-sitter-mode)
-(blackout 'tree-sitter-hl-mode)
 (blackout 'goggles-mode)
 (blackout 'editorconfig-mode)
-(blackout 'yas-minor-mode)
+;(blackout 'yas-minor-mode)
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp
@@ -191,9 +199,9 @@ We start by setting the paren mode to blocks:
 ;; Choose what you like, (moe-light) or (moe-dark)
 (moe-dark)
 
-(custom-theme-set-faces
- 'moe-dark
- '(tree-sitter-hl-face:comment ((,class (:background unspecified :foreground ,moe-dark-comment :slant italic)))))
+;; (custom-theme-set-faces
+;;  'moe-dark
+;;  '(tree-sitter-hl-face:comment ((,class (:background unspecified :foreground ,moe-dark-comment :slant italic)))))
 #+END_SRC
 ** Fonts
 Set up fonts
@@ -204,8 +212,9 @@ Set up fonts
 (defvar erk/font "Cascadia Code PL SemiLight-13" "Default font")
 
 ;; Berkerley Mono
-(setq erk/font "Berkeley Mono-10:style=Regular")
+(setq erk/font "TX-02-10:style=Regular")
 
+(add-to-list 'default-frame-alist `(font . ,erk/font))
 ;; This is done in a slightly odd way to ensure it is set when
 ;; starting from deamon mode.
 (set-frame-font erk/font nil t)
@@ -312,19 +321,57 @@ Install multiple-cursors, the keybinds are in the last chapter
   :config
   (editorconfig-mode 1))
 #+end_src
-** Parinfer
+** Parinfer / Smart Parens
 #+begin_src emacs-lisp
 (use-package parinfer-rust-mode
     :hook emacs-lisp-mode
     :init
     (setq parinfer-rust-auto-download t))
+
+;; Maybe enable again later
+;; (use-package smartparens
+;;   :ensure smartparens  ;; install the package
+;;   :hook (prog-mode text-mode markdown-mode) ;; add `smartparens-mode` to these hooks
+;;   :config
+;;   ;; load default config
+;;   (require 'smartparens-config))
 #+end_src
-** Yasnippet
-#+begin_src emacs-lisp
-(use-package yasnippet
-   :ensure t)
-(yas-reload-all)
-#+end_src
+** Temple
+#+BEGIN_SRC emacs-lisp
+;; Configure Tempel
+(use-package tempel
+  ;; Require trigger prefix before template name when completing.
+  :custom
+  (tempel-trigger-prefix "<")
+
+  :bind (("M--" . tempel-complete) ;; Alternative tempel-expand
+         ("M-'" . tempel-insert))
+
+  :init
+
+  ;; Setup completion at point
+  (defun tempel-setup-capf ()
+    ;; Add the Tempel Capf to `completion-at-point-functions'.
+    ;; `tempel-expand' only triggers on exact matches. Alternatively use
+    ;; `tempel-complete' if you want to see all matches, but then you
+    ;; should also configure `tempel-trigger-prefix', such that Tempel
+    ;; does not trigger too often when you don't expect it. NOTE: We add
+    ;; `tempel-expand' *before* the main programming mode Capf, such
+    ;; that it will be tried first.
+    (setq-local completion-at-point-functions
+                (cons #'tempel-complete
+                      completion-at-point-functions)))
+
+  (add-hook 'conf-mode-hook 'tempel-setup-capf)
+  (add-hook 'prog-mode-hook 'tempel-setup-capf)
+  (add-hook 'text-mode-hook 'tempel-setup-capf)
+
+  ;; Optionally make the Tempel templates available to Abbrev,
+  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+  ;; (global-tempel-abbrev-mode)
+)
+#+END_SRC
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
@@ -489,19 +536,31 @@ For Lobste.rs we use POP3 to not fill the mailserver up.
 * LSP
 Install lsp mode
 #+BEGIN_SRC emacs-lisp
-(require 'yasnippet)
-
-(use-package go-mode)
-
-(use-package eglot)
+;;(use-package eglot)
 (require 'eglot)
+
+(use-package eglot-booster
+  :straight (eglot-booster
+	     :type git
+	     :host github
+	     :repo "jdtsmith/eglot-booster"
+	     :files ("*.el"))
+  :after eglot
+  :config (eglot-booster-mode))
+
+(use-package eglot-tempel
+  :preface (eglot-tempel-mode)
+  :init
+  (eglot-tempel-mode t))
+
 (setq eglot-inlay-hints-mode nil) ;; This does not work
 (setq eglot-ignored-server-capabilities '(:inlayHintProvider))
-(add-to-list 'eglot-server-programs
-             `(rust-mode . ("rust-analyzer" :initializationOptions
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(rust-mode . ("rust-analyzer" :initializationOptions
                             ( :procMacro (:enable t)
                               :cargo ( :buildScripts (:enable t)))))
-             `(go-mode . ("/home/erk/go/bin/gopls")))
+               '(go-mode . ("/home/erk/go/bin/gopls"))))
 
 (use-package corfu
   :straight (:files (:defaults "extensions/*"))
@@ -533,6 +592,10 @@ Install lsp mode
 ;; `completion-at-point' is often bound to M-TAB.
 (setq tab-always-indent 'complete)
 #+END_SRC
+* Zig
+#+BEGIN_SRC emacs-lisp
+(straight-use-package 'zig-mode)
+#+END_SRC
 * Rust
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
@@ -543,7 +606,6 @@ Install packages needed for rustic with rust-analyzer
  '(rustic :type git
           :host github
           :repo "emacs-rustic/rustic"))
-
 (setq rustic-lsp-client 'eglot)
 #+END_SRC
 
@@ -551,23 +613,32 @@ Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
 ;; (set-face-attribute 'rust-ampersand-face nil
 ;;                     :inherit nil)
-(add-hook 'rustic-mode-hook #'yas-minor-mode)
+;; (add-hook 'rustic-mode-hook #'yas-minor-mode)
+(add-hook 'rust-mode-hook #'rust-ts-mode)
 ;; (remove-hook 'rustic-mode-hook 'flycheck-mode)
 ;; (define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
 ;; (setq company-tooltip-align-annotations t
 ;;       company-idle-delay 1
 ;;       company-show-numbers t)
 #+END_SRC
-* Lean4
+* Typst
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package lean4-mode
-  ;;   :straight (lean4-mode
-  ;; 	       :type git
-  ;; 	       :host github
-  ;; 	       :repo "leanprover/lean4-mode"
-  ;; 	       :files ("*.el" "data"))
-  ;;     ;; to defer loading the package until required
-  ;;     :commands (lean4-mode))
+(use-package typst-ts-mode
+  :straight '(:type git :host codeberg :repo "meow_king/typst-ts-mode"))
+
+(with-eval-after-load 'eglot
+  (with-eval-after-load 'typst-ts-mode
+    (add-to-list 'eglot-server-programs
+                 `((typst-ts-mode) .
+                   ,(eglot-alternatives `(,typst-ts-lsp-download-path
+                                          "tinymist"
+                                          "typst-lsp"))))))
+(setq-default eglot-workspace-configuration
+              '(:tinymist (:exportPdf "onSave")))
+
+(use-package websocket)
+(use-package typst-preview
+  :straight '(:type git :host github :repo "havarddj/typst-preview.el"))
 #+END_SRC
 * Magit
 Install Magit and magit forge and setup ssh agent
@@ -592,15 +663,14 @@ Install Magit and magit forge and setup ssh agent
       magit-delta-default-dark-theme "DarkNeon"
       magit-delta-default-light-theme "1337")
 
-(use-package magit-todos
-  :after magit
-  :config (magit-todos-mode 1))
+;; (use-package magit-todos
+;;   :after magit
+;;   :config (magit-todos-mode 1))
 
 (add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
 #+end_src
 * Consult
 #+BEGIN_SRC emacs-lisp
-;; Example configuration for Consult
 (use-package consult
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings in `mode-specific-map'
@@ -641,9 +711,6 @@ Install Magit and magit forge and setup ssh agent
   ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<")) ;; "C-+"
 
-(use-package consult-yasnippet)
-(require 'consult-yasnippet)
-
 (use-package orderless
   :ensure t
   :init
@@ -661,17 +728,6 @@ Install Magit and magit forge and setup ssh agent
   (cons input (apply-partially #'orderless--highlight input t)))
 (setq affe-regexp-compiler #'affe-orderless-regexp-compiler)
 #+END_SRC
-* EMMS
-#+BEGIN_SRC emacs-lisp
-(add-to-list 'auto-mode-alist '(".*\.emms$" . emacs-lisp-mode))
-(use-package emms)
-(require 'emms-setup)
-(emms-all)
-(setq emms-player-list '(emms-player-mpv)
-      emms-info-functions '(emms-info-native))
-(require 'emms-streams)
-(customize-set-variable 'emms-player-mpv-update-metadata t)
-#+END_SRC
 * Transient
 #+BEGIN_SRC emacs-lisp
 (use-package transient)
@@ -680,7 +736,7 @@ Install Magit and magit forge and setup ssh agent
 
 * Work
 #+BEGIN_SRC emacs-lisp
- (if (string= (system-name) "fedora")
+ (if (string= (system-name) "archnerve")
      (require 'work))
 #+END_SRC
 * Misc
@@ -706,17 +762,6 @@ Install Magit and magit forge and setup ssh agent
                ("terminfo/65" "terminfo/65/*")
                ("integration" "integration/*")
                (:exclude ".dir-locals.el" "*-tests.el"))))
-#+END_SRC
-** Tree-Sitter
-#+BEGIN_SRC emacs-lisp
-(straight-use-package 'tree-sitter)
-(straight-use-package 'tree-sitter-langs)
-
-(require 'tree-sitter)
-(require 'tree-sitter-langs)
-
-(global-tree-sitter-mode)
-(add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
 #+END_SRC
 ** Scratch
 #+begin_src emacs-lisp
