@@ -1,0 +1,13 @@
+/.lsp-session-v1
+/.mc-lists.el
+/dotemacs.el
+/auto-save-list/
+/eln-cache/
+/eshell/
+/opt/
+/parinfer-rust/
+/tree-sitter/
+/straight/
+/transient/
+/url/
+/var/
