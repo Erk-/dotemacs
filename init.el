@@ -38,9 +38,10 @@
         (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 
-  (straight-use-package 'use-package)
+  ;; (straight-use-package 'org)
+  ;; (straight-use-package 'use-package)
   (require 'use-package)
-  (straight-use-package 'org-mode)
+  ;; (straight-use-package 'org-mode)
   (setq straight-use-package-by-default 1)
 
   ;; Tangle configuration

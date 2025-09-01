@@ -18,7 +18,7 @@
   - [[#temple][Temple]]
 - [[#org-mode][Org mode]]
 - [[#rss][RSS]]
-- [[#selectrum][Selectrum]]
+- [[#vertico][Vertico]]
 - [[#mail-wanderlust][Mail [Wanderlust]]]
 - [[#lsp][LSP]]
 - [[#zig][Zig]]
@@ -56,7 +56,7 @@
 #+END_SRC
 ** Initial setup
 #+BEGIN_SRC emacs-lisp
-(setq custom-file "~/.emacs-custom.el")
+(setq custom-file "~/.config/emacs-custom.el")
 (if (file-readable-p custom-file)
     (load custom-file))
 
@@ -73,6 +73,8 @@
 (load-file "~/.emacs.d/lisp/da-kalender.el")
 
 (setq exec-path (append exec-path '("/home/erk/.cargo/bin")))
+(straight-use-package 'transient)
+(require 'transient)
 #+END_SRC
 ** Authentication
 #+begin_src emacs-lisp
@@ -130,6 +132,8 @@ Set up some small things to start with:
 
 ;; Fix strange size issues with tiling wms
 (setq frame-resize-pixelwise t)
+
+;; (straight-use-package '(stillness-mode :host github :repo "neeasade/stillness-mode.el" :branch "main"))
 #+END_SRC
 
 Set up scrolling
@@ -239,56 +243,6 @@ Set up fonts
 ;;   (set-fontset-font
 ;;    t 'symbol (font-spec :family "Twemoji") nil 'prepend))
 #+END_SRC
-
-*** Custom semantic tokens
-#+BEGIN_SRC emacs-lisp
-;; (setq lsp-semantic-token-faces
-;;       '(("variable.reference" . (t (:inherit lsp-face-semhl-variable :slant italic)))
-;;         ("parameter.reference" . (t (inherit lsp-face-semhl-parameter :slant italic)))
-;;         ("method.static" . (t (:inherit lsp-face-semhl-method :foreground "#f0c506")))
-;;         ("method.public" . (t (:inherit lsp-face-semhl-method :foreground "#eedf54")))
-;;         ("method.library" . (t (:inherit lsp-face-semhl-method :foreground "#a5cf0a")))
-;;         ("method.library.static" . (t (:inherit lsp-face-semhl-method :foreground "#f0c506")))
-;;         ("method.trait" . (t (:inherit lsp-face-semhl-method :foreground "#cca34a")))
-;;         ("method.library.trait" . (t (:inherit lsp-face-semhl-method :foreground "#d1ce08")))
-;;         ("keyword.unsafe" . (t (:inherit lsp-face-semhl-keyword :foreground "#df732b" :slant italic)))
-;;         ("lifetime" . (t (:inherit tree-sitter-hl-face:label :foreground "#11ddcc")))
-;;         ("method.static.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b")))
-;;         ("method.declaration.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b")))
-;;         ("*.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b" :slant italic)))
-;;         ("method.library.unsafe" . (t (:inherit lsp-face-semhl-method :foreground "#df732b")))
-;;         ("interface.library" . (t (:inherit lsp-face-semhl-interface :foreground "#8ec03e")))
-;;         ("generic.attribute" . (t (:inherit tree-sitter-hl-face:attribute :foreground "#fdf9287e")))
-;;         ("attribute.attribute" . (t (:inherit tree-sitter-hl-face:attribute :foreground "#8ec03e7e")))
-;;         ("parenthesis.attribute" . (t (:inherit tree-sitter-hl-face:attribute :foreground "#338d63")))
-;;         ("typeParameter" . (t (:inherit tree-sitter-hl-face:type.argument :foreground "#ca90fa" :weight bold)))
-;;         ("selfKeyword" . (t (:inherit lsp-face-semhl-keyword :foreground "#809dff")))
-;;         ("enum" . (t (:inherit lsp-face-semhl-keyword :foreground "#17b1d8")))
-;;         ("property" . (t (:inherit lsp-face-semhl-keyword :foreground "#75bfe7" :slant italic)))
-;;         ("parameter" . (t (:inherit lsp-face-semhl-parameter :foreground "#00afce")))
-;;         ("*.consuming" . (t (:inherit lsp-face-semhl-keyword :foreground :weight bold)))
-;;         ("namespace" . (t (:inherit lsp-face-semhl-namespace :foreground "#99bfc4")))
-;;         ("namespace.library" . (t (:inherit lsp-face-semhl-namespace :foreground "#b4c499")))
-;;         ("unresolvedReference" . (t (:inherit lsp-face-semhl-keyword :foreground "#ff493c" :slant italic)))
-;;         ("operator" . (t (:inherit tree-sitter-hl-face:operator :foreground "#d4d4d4da")))
-;;         ("comma" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
-;;         ("colon" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
-;;         ("semicolon" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
-;;         ("punctuation" . (t (:inherit tree-sitter-hl-face:punctuation.delimiter :foreground "#d4d4d4da")))
-;;         ("brace" . (t (:inherit tree-sitter-hl-face:punctuation.bracket :foreground "#f0ddddda")))
-;;         ("parenthesis" . (t (:inherit tree-sitter-hl-face:punctuation :foreground "#d4d4d4da")))
-;;         ("builtinType" . (t (:inherit tree-sitter-hl-face:type.builtin :foreground "#b7fc89cb")))
-;;         ("angle" . (t (:inherit tree-sitter-hl-face:punctuation :foreground "#d4d4d4da")))
-;;         ("operator.controlFlow" . (t (:inherit tree-sitter-hl-face:operator :foreground "#fd8b5d")))
-;;         ("interface" . (t (:inherit lsp-face-semhl-interface :foreground "#f7ae40")))
-;;         ("typeAlias.trait" . (t (:inherit lsp-face-semhl-interface :foreground "#f1e6a3")))
-;;         ("keyword.controlFlow" . (t (:inherit lsp-face-semhl-keyword :foreground "#e689bc")))
-;;         ("keyword.async" . (t (:inherit lsp-face-semhl-keyword :foreground "#ca99f8")))
-;;         ("keyword.async.controlFlow" . (t (:inherit lsp-face-semhl-keyword :foreground "#ca99f8")))
-;;         ("macro" . (t (:inherit lsp-face-semhl-keyword :foreground "#c0b5ff")))
-;;         ("boolean" . (t (:inherit tree-sitter-hl-face:constant.builtin :foreground "#14b16f")))
-;;         ("string" . (t (:inherit lsp-face-semhl-string :foreground "#e98e6a")))))
-#+END_SRC
 ** Goggles
 #+begin_src emacs-lisp
 (use-package goggles
@@ -375,8 +329,8 @@ Install multiple-cursors, the keybinds are in the last chapter
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
-(use-package org-contrib
-  :ensure t)
+;; (use-package org-contrib
+;;   :ensure t)
 
 (setq org-src-preserve-indentation t
       org-edit-src-content-indentation 0)
@@ -400,11 +354,11 @@ Will have to be cleaned up!
 ;; (require 'org-ref
 ;;         'org-superstar)
 
-(straight-use-package 'ox-gfm)
+;; (straight-use-package 'ox-gfm)
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((plantuml . t)))
+;; (org-babel-do-load-languages
+;;  'org-babel-load-languages
+;;  '((plantuml . t)))
 
 ;; (org-babel-do-load-languages 'org-babel-load-languages
 ;;                              '((shell . t)
@@ -456,10 +410,9 @@ Set up list of feeds
 (when (load "~/org/feeds.el" t)
        (require 'feeds))
 #+END_SRC
-* Selectrum
+* Vertico
 #+BEGIN_SRC emacs-lisp
 (straight-use-package 'prescient)
-(straight-use-package 'selectrum-prescient)
 (use-package vertico
   :straight (:files (:defaults "extensions/*"))
   :init
@@ -537,7 +490,10 @@ For Lobste.rs we use POP3 to not fill the mailserver up.
 Install lsp mode
 #+BEGIN_SRC emacs-lisp
 ;;(use-package eglot)
+;;(use-package eglot)
 (require 'eglot)
+
+(setq eglot-code-action-indicator "»")
 
 (use-package eglot-booster
   :straight (eglot-booster
@@ -557,40 +513,42 @@ Install lsp mode
 (setq eglot-ignored-server-capabilities '(:inlayHintProvider))
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
-               '(rust-mode . ("rust-analyzer" :initializationOptions
-                            ( :procMacro (:enable t)
-                              :cargo ( :buildScripts (:enable t)))))
-               '(go-mode . ("/home/erk/go/bin/gopls"))))
+               '((rust-ts-mode rust-mode rustic-mode) .
+                 ("rust-analyzer" :initializationOptions
+                  ( :procMacro (:enable t)
+                    :cargo ( :buildScripts (:enable t)))))))
 
 (use-package corfu
-  :straight (:files (:defaults "extensions/*"))
-  ;; Optional customizations
   :custom
-  ;; (corfu-cycle t)                ;; Enable cycling for `corfu-next/previous'
-  (corfu-auto t)                 ;; Enable auto completion
-  (corfu-separator ?\s)          ;; Orderless field separator
-  ;; (corfu-quit-at-boundary nil)   ;; Never quit at completion boundary
+  (corfu-auto t)          ;; Enable auto completion
   (corfu-quit-no-match 'separator)
-  ;; (corfu-preview-current nil)    ;; Disable current candidate preview
-  ;; (corfu-preselect 'prompt)      ;; Preselect the prompt
-  ;; (corfu-on-exact-match nil)     ;; Configure handling of exact matches
-  ;; (corfu-scroll-margin 5)        ;; Use scroll margin
-
+  ;; (corfu-separator ?_) ;; Set to orderless separator, if not using space
+  :bind
+  ;; Another key binding can be used, such as S-SPC.
+  (:map corfu-map ("H-SPC" . corfu-insert-separator))
   :init
   (global-corfu-mode))
 
-
-
 (setq completion-cycle-threshold 3)
 
-;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-;; Corfu commands are hidden, since they are not supposed to be used via M-x.
-(setq read-extended-command-predicate
-      #'command-completion-default-include-p)
+;; A few more useful configurations...
+(use-package emacs
+  :custom
+  ;; TAB cycle if there are only few candidates
+  ;; (completion-cycle-threshold 3)
 
-;; Enable indentation+completion using the TAB key.
-;; `completion-at-point' is often bound to M-TAB.
-(setq tab-always-indent 'complete)
+  ;; Enable indentation+completion using the TAB key.
+  ;; `completion-at-point' is often bound to M-TAB.
+  (tab-always-indent 'complete)
+
+  ;; Emacs 30 and newer: Disable Ispell completion function.
+  ;; Try `cape-dict' as an alternative.
+  (text-mode-ispell-word-completion nil)
+
+  ;; Hide commands in M-x which do not apply to the current mode.  Corfu
+  ;; commands are hidden, since they are not used via M-x. This setting is
+  ;; useful beyond Corfu.
+  (read-extended-command-predicate #'command-completion-default-include-p))
 #+END_SRC
 * Zig
 #+BEGIN_SRC emacs-lisp
@@ -611,15 +569,8 @@ Install packages needed for rustic with rust-analyzer
 
 Initialize and configure rustic
 #+BEGIN_SRC emacs-lisp
-;; (set-face-attribute 'rust-ampersand-face nil
-;;                     :inherit nil)
-;; (add-hook 'rustic-mode-hook #'yas-minor-mode)
 (add-hook 'rust-mode-hook #'rust-ts-mode)
 ;; (remove-hook 'rustic-mode-hook 'flycheck-mode)
-;; (define-key rustic-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-;; (setq company-tooltip-align-annotations t
-;;       company-idle-delay 1
-;;       company-show-numbers t)
 #+END_SRC
 * Typst
 #+BEGIN_SRC emacs-lisp
