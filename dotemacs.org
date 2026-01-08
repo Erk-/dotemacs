@@ -134,6 +134,9 @@ Set up some small things to start with:
 (setq frame-resize-pixelwise t)
 
 ;; (straight-use-package '(stillness-mode :host github :repo "neeasade/stillness-mode.el" :branch "main"))
+
+;; Fix for River-vm
+(setq default-frame-alist '((undecorated . t)))
 #+END_SRC
 
 Set up scrolling
@@ -495,14 +498,14 @@ Install lsp mode
 
 (setq eglot-code-action-indicator "»")
 
-(use-package eglot-booster
-  :straight (eglot-booster
-	     :type git
-	     :host github
-	     :repo "jdtsmith/eglot-booster"
-	     :files ("*.el"))
-  :after eglot
-  :config (eglot-booster-mode))
+;; (use-package eglot-booster
+;;   :straight (eglot-booster
+;; 	     :type git
+;; 	     :host github
+;; 	     :repo "jdtsmith/eglot-booster"
+;; 	     :files ("*.el"))
+;;   :after eglot
+;;   :config (eglot-booster-mode))
 
 (use-package eglot-tempel
   :preface (eglot-tempel-mode)
@@ -687,8 +690,8 @@ Install Magit and magit forge and setup ssh agent
 
 * Work
 #+BEGIN_SRC emacs-lisp
- (if (string= (system-name) "archnerve")
-     (require 'work))
+(when (load "~/org/work.el" t)
+       (require 'work))
 #+END_SRC
 * Misc
 ** PDF viewer
