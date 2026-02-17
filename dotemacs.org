@@ -133,9 +133,9 @@ Set up some small things to start with:
 ;; Fix strange size issues with tiling wms
 (setq frame-resize-pixelwise t)
 
-;; (straight-use-package '(stillness-mode :host github :repo "neeasade/stillness-mode.el" :branch "main"))
+;;(straight-use-package '(stillness-mode :host github :repo "neeasade/stillness-mode.el" :branch "main"))
 
-;; Fix for River-vm
+;; Fix emacs in River VM.
 (setq default-frame-alist '((undecorated . t)))
 #+END_SRC
 
@@ -174,14 +174,8 @@ Clean up the mode-line
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp
-  ;; Installer ikoner
-
-      (straight-use-package 'all-the-icons)
-
-  ;; Installer doom-modeline
-  ;; (use-package doom-modeline
-  ;;   :ensure t
-  ;;   :init (doom-modeline-mode 1))
+;; Installer ikoner
+(straight-use-package 'all-the-icons)
 #+end_src
 ** Theme
 We start by setting the paren mode to blocks:
@@ -205,14 +199,11 @@ We start by setting the paren mode to blocks:
 ;; Finally, apply moe-theme now.
 ;; Choose what you like, (moe-light) or (moe-dark)
 (moe-dark)
-
-;; (custom-theme-set-faces
-;;  'moe-dark
-;;  '(tree-sitter-hl-face:comment ((,class (:background unspecified :foreground ,moe-dark-comment :slant italic)))))
 #+END_SRC
 ** Fonts
 Set up fonts
 #+BEGIN_SRC emacs-lisp
+;; Force use of harfbuzz
 (add-to-list 'initial-frame-alist '(font-backend  . (harfbuzz)))
 (add-to-list 'default-frame-alist '(font-backend  . (harfbuzz)))
 
@@ -225,26 +216,6 @@ Set up fonts
 ;; This is done in a slightly odd way to ensure it is set when
 ;; starting from deamon mode.
 (set-frame-font erk/font nil t)
-
-;; (set-face-attribute 'default nil :height 140)
-;; (defun fontify-frame (frame)
-;;   (set-frame-parameter frame 'font erk/font))
-
-;; Fontify current frame
-;(fontify-frame nil)
-;; Fontify any future frames
-;; (push 'fontify-frame after-make-frame-functions) 
-;; (add-hook 'after-make-frame-functions
-;;           `(lambda (frame)
-;;              (select-frame frame)
-;;              (when (display-graphic-p frame)
-;;                (set-frame-font erk/font))))
-
-;; (set-face-attribute 'default nil :height 140)
-
-;; (when (member "Twemoji" (font-family-list))
-;;   (set-fontset-font
-;;    t 'symbol (font-spec :family "Twemoji") nil 'prepend))
 #+END_SRC
 ** Goggles
 #+begin_src emacs-lisp
@@ -284,62 +255,48 @@ Install multiple-cursors, the keybinds are in the last chapter
     :hook emacs-lisp-mode
     :init
     (setq parinfer-rust-auto-download t))
-
-;; Maybe enable again later
-;; (use-package smartparens
-;;   :ensure smartparens  ;; install the package
-;;   :hook (prog-mode text-mode markdown-mode) ;; add `smartparens-mode` to these hooks
-;;   :config
-;;   ;; load default config
-;;   (require 'smartparens-config))
 #+end_src
 ** Temple
 #+BEGIN_SRC emacs-lisp
-;; Configure Tempel
-(use-package tempel
-  ;; Require trigger prefix before template name when completing.
-  :custom
-  (tempel-trigger-prefix "<")
+;; ;; Configure Tempel
+;; (use-package tempel
+;;   ;; Require trigger prefix before template name when completing.
+;;   :custom
+;;   (tempel-trigger-prefix "<")
 
-  :bind (("M--" . tempel-complete) ;; Alternative tempel-expand
-         ("M-'" . tempel-insert))
+;;   :bind (("M--" . tempel-complete) ;; Alternative tempel-expand
+;;          ("M-'" . tempel-insert))
 
-  :init
+;;   :init
 
-  ;; Setup completion at point
-  (defun tempel-setup-capf ()
-    ;; Add the Tempel Capf to `completion-at-point-functions'.
-    ;; `tempel-expand' only triggers on exact matches. Alternatively use
-    ;; `tempel-complete' if you want to see all matches, but then you
-    ;; should also configure `tempel-trigger-prefix', such that Tempel
-    ;; does not trigger too often when you don't expect it. NOTE: We add
-    ;; `tempel-expand' *before* the main programming mode Capf, such
-    ;; that it will be tried first.
-    (setq-local completion-at-point-functions
-                (cons #'tempel-complete
-                      completion-at-point-functions)))
+;;   ;; Setup completion at point
+;;   (defun tempel-setup-capf ()
+;;     ;; Add the Tempel Capf to `completion-at-point-functions'.
+;;     ;; `tempel-expand' only triggers on exact matches. Alternatively use
+;;     ;; `tempel-complete' if you want to see all matches, but then you
+;;     ;; should also configure `tempel-trigger-prefix', such that Tempel
+;;     ;; does not trigger too often when you don't expect it. NOTE: We add
+;;     ;; `tempel-expand' *before* the main programming mode Capf, such
+;;     ;; that it will be tried first.
+;;     (setq-local completion-at-point-functions
+;;                 (cons #'tempel-complete
+;;                       completion-at-point-functions)))
 
-  (add-hook 'conf-mode-hook 'tempel-setup-capf)
-  (add-hook 'prog-mode-hook 'tempel-setup-capf)
-  (add-hook 'text-mode-hook 'tempel-setup-capf)
+;;   (add-hook 'conf-mode-hook 'tempel-setup-capf)
+;;   (add-hook 'prog-mode-hook 'tempel-setup-capf)
+;;   (add-hook 'text-mode-hook 'tempel-setup-capf)
 
-  ;; Optionally make the Tempel templates available to Abbrev,
-  ;; either locally or globally. `expand-abbrev' is bound to C-x '.
-  ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
-  ;; (global-tempel-abbrev-mode)
-)
+;;   ;; Optionally make the Tempel templates available to Abbrev,
+;;   ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+;;   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+;;   ;; (global-tempel-abbrev-mode)
+;; )
 #+END_SRC
 * Org mode
 Will have to be cleaned up!
 #+BEGIN_SRC emacs-lisp
-;; (use-package org-contrib
-;;   :ensure t)
-
 (setq org-src-preserve-indentation t
       org-edit-src-content-indentation 0)
-
-;; (use-package org-ref
-;;   :ensure t)
 
 ;; (use-package org-superstar
 ;;   :ensure t)
@@ -348,59 +305,6 @@ Will have to be cleaned up!
   :ensure t
   :init
   (add-hook 'org-mode-hook #'toc-org-mode))
-
-;; (use-package auctex
-;;   :ensure t)
-;; (use-package cdlatex
-;;   :ensure t)
-
-;; (require 'org-ref
-;;         'org-superstar)
-
-;; (straight-use-package 'ox-gfm)
-
-;; (org-babel-do-load-languages
-;;  'org-babel-load-languages
-;;  '((plantuml . t)))
-
-;; (org-babel-do-load-languages 'org-babel-load-languages
-;;                              '((shell . t)
-;;                                (latex . t)
-;;                                (python . t)))
-
-
-;; (require 'org)
-;; (require 'ob-dot)
-
-;; (setq org-log-done t)
-
-;; (setq org-agenda-files (list "~/org/todo.org" "~/org/Kalender/Personlig.org"))
-(setq org-agenda-files (list "~/org/nerve.org"))
-
-;; (setq org-latex-default-figure-position "H")
-
-;; (setq org-src-fontify-natively t)
-
-;; (setq org-latex-listings 'minted)
-;; (setq org-latex-minted-options
-;;       '(("frame" "lines")
-;;         ("linenos=true")
-;;         ("breaklines=true")
-;;         ("escapeinside=||")
-;;         ("mathescape=true")))
-;; (setq org-latex-minted-options '())
-
-
-;; (setq org-latex-pdf-process
-;;       (list "latexmk -shell-escape -bibtex -pdfxe -f  %f"))
-
-;; (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-;; (add-hook 'org-mode-hook 'auto-fill-mode)
-;; (add-hook 'org-mode-hook 'org-indent-mode)
-
-;; Only env in beamer
-;; (add-hook 'org-beamer-hook '(add-to-list 'org-beamer-environments-extra
-;;                                          '("onlyenv" "O" "\\begin{onlyenv}%a" "\\end{onlyenv}")))
 #+END_SRC
 * RSS
 Install elfeed
@@ -492,8 +396,6 @@ For Lobste.rs we use POP3 to not fill the mailserver up.
 * LSP
 Install lsp mode
 #+BEGIN_SRC emacs-lisp
-;;(use-package eglot)
-;;(use-package eglot)
 (require 'eglot)
 
 (setq eglot-code-action-indicator "»")
@@ -507,10 +409,10 @@ Install lsp mode
 ;;   :after eglot
 ;;   :config (eglot-booster-mode))
 
-(use-package eglot-tempel
-  :preface (eglot-tempel-mode)
-  :init
-  (eglot-tempel-mode t))
+;; (use-package eglot-tempel
+;;   :preface (eglot-tempel-mode)
+;;   :init
+;;   (eglot-tempel-mode t))
 
 (setq eglot-inlay-hints-mode nil) ;; This does not work
 (setq eglot-ignored-server-capabilities '(:inlayHintProvider))
@@ -560,9 +462,6 @@ Install lsp mode
 * Rust
 Install packages needed for rustic with rust-analyzer
 #+BEGIN_SRC emacs-lisp
-;;(setq lsp-keymap-prefix (kbd "C-."))
-;;(define-key lsp-mode-map (kbd "C-.") lsp-command-map)
-;;(use-package company)
 (straight-use-package
  '(rustic :type git
           :host github
@@ -606,64 +505,114 @@ Install Magit and magit forge and setup ssh agent
  ;; (exec-path-from-shell-copy-env "SSH_AGENT_PID")
  ;; (exec-path-from-shell-copy-env "SSH_AUTH_SOCK")
 
-(use-package keychain-environment
-  :init
-  (keychain-refresh-environment))
+;; (use-package keychain-environment
+;;   :init
+;;   (keychain-refresh-environment))
 
-(use-package magit-delta
-  :after magit)
-(setq magit-delta-delta-executable "/usr/bin/delta"
-      magit-delta-hide-plus-minus-markers nil
-      magit-delta-default-dark-theme "DarkNeon"
-      magit-delta-default-light-theme "1337")
-
-;; (use-package magit-todos
-;;   :after magit
-;;   :config (magit-todos-mode 1))
-
-(add-hook 'magit-mode-hook (lambda () (magit-delta-mode +1)))
+(use-package magit-todos
+  :after magit
+  :config (magit-todos-mode 1))
 #+end_src
 * Consult
 #+BEGIN_SRC emacs-lisp
+;; Example configuration for Consult
 (use-package consult
-  ;; Replace bindings. Lazily loaded due by `use-package'.
+  ;; Replace bindings. Lazily loaded by `use-package'.
   :bind (;; C-c bindings in `mode-specific-map'
+         ("C-c M-x" . consult-mode-command)
+         ("C-c h" . consult-history)
+         ("C-c k" . consult-kmacro)
+         ("C-c m" . consult-man)
+         ("C-c i" . consult-info)
+         ([remap Info-search] . consult-info)
+         ;; C-x bindings in `ctl-x-map'
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
+         ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
+         ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ;; M-g bindings in `goto-map'
+         ("M-g e" . consult-compile-error)
+         ("M-g r" . consult-grep-match)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
          ("M-g g" . consult-goto-line)             ;; orig. goto-line
          ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-         ("M-s d" . consult-find)
-         ("M-s D" . consult-locate)
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings in `search-map'
+         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+         ("M-s c" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
          ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
          ;; Isearch integration
          ("M-s e" . consult-isearch-history)
          :map isearch-mode-map
          ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
          ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
-         ("C-." . consult-line)                  ;; needed by consult-line to detect isearch
          ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
-         ("M-s L" . consult-line-multi))           ;; needed by consult-line to detect isearch
-
+         ("M-s L" . consult-line-multi)            ;; needed by consult-line to detect isearch
+         ;; Minibuffer history
+         :map minibuffer-local-map
+         ("M-s" . consult-history)                 ;; orig. next-matching-history-element
+         ("M-r" . consult-history))                ;; orig. previous-matching-history-element
 
   ;; The :init configuration is always executed (Not lazy)
   :init
+
+  ;; Tweak the register preview for `consult-register-load',
+  ;; `consult-register-store' and the built-in commands.  This improves the
+  ;; register formatting, adds thin separator lines, register sorting and hides
+  ;; the window mode line.
+  (advice-add #'register-preview :override #'consult-register-window)
+  (setq register-preview-delay 0.5)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
 
   ;; Configure other variables and modes in the :config section,
   ;; after lazily loading the package.
   :config
 
-  (setq consult-preview-key 'any)
-
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key "M-.")
+  ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
   (consult-customize
    consult-theme :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
+   consult-ripgrep consult-git-grep consult-grep consult-man
    consult-bookmark consult-recent-file consult-xref
-   consult--source-bookmark consult--source-file-register
-   consult--source-recent-file consult--source-project-recent-file
+   consult-source-bookmark consult-source-file-register
+   consult-source-recent-file consult-source-project-recent-file
    ;; :preview-key "M-."
    :preview-key '(:debounce 0.4 any))
 
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<")) ;; "C-+"
+
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
 
 (use-package orderless
   :ensure t
