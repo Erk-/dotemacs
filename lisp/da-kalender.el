@@ -1,4 +1,4 @@
-;;; da-kalender.el --- Danish calendar for Emacs -*-coding:utf-8-*-
+;;; da-kalender.el --- Danish calendar for Emacs -*-coding:utf-8; lexical-binding: t; -*-
 ;;; Taken from https://github.com/soren/elisp/blob/master/da-kalender.el
 ;; Copyright (c) 2010 Søren Lund <soren@lund.org>
 

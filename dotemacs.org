@@ -2,6 +2,7 @@
 #+AUTHOR: Valdemar Erk
 * Table of content                                                      :TOC:
 - [[#bootstrap][Bootstrap]]
+  - [[#lexical-binding][Lexical Binding]]
   - [[#user-information][User information]]
   - [[#gpg-setup][GPG Setup]]
   - [[#initial-setup][Initial setup]]
@@ -37,6 +38,10 @@
 - [[#keybinds][Keybinds]]
 
 * Bootstrap
+** Lexical Binding
+#+BEGIN_SRC emacs-lisp
+;; -*- lexical-binding: t; -*-
+#+END_SRC
 ** User information
 #+BEGIN_SRC emacs-lisp
 (setq user-full-name "Valdemar Erk"
